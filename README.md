@@ -5,7 +5,7 @@ sudo apt install redis-server -y
 Note : Gunakan redis 8.10 atau lebih tinggi
 
 sudo nano /etc/redis/redis.conf
-cari requirepass : # requirepass Linuxer91
+cari requirepass : # requirepass strongpassword
 
 // Konfigurasi Django untuk Redis
 Di settings.py, pastikan CHANNEL_LAYERS sudah diatur untuk Redis tanpa password/dengan password
