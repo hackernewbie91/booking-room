@@ -10,12 +10,14 @@ cari requirepass : # requirepass Linuxer91
 // Konfigurasi Django untuk Redis
 Di settings.py, pastikan CHANNEL_LAYERS sudah diatur untuk Redis tanpa password/dengan password
 
-python
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [('redis://127.0.0.1:6379/0')],
+            'hosts': [{
+                'address': 'redis://127.0.0.1:6379/0',
+                'password': 'strongpassword',
+            }],
         },
     },
 }
