@@ -1,0 +1,185 @@
+{% extends "bookings/base.html" %}
+{% block content %}
+<div class="page-header">
+    <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+</div>
+
+<!-- Statistik Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+        <div class="stat-info">
+            <h4>{{ bookings_today }}</h4>
+            <p>Booking Hari Ini</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+        <div class="stat-info">
+            <h4>{{ bookings_month }}</h4>
+            <p>Booking Bulan Ini</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-building"></i></div>
+        <div class="stat-info">
+            <h4>{{ total_rooms }}</h4>
+            <p>Total Ruangan</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div class="stat-info">
+            <h4>{{ total_users }}</h4>
+            <p>Total Pengguna</p>
+        </div>
+    </div>
+</div>
+
+<!-- Insight Cards -->
+<div class="stats-grid" style="margin-bottom: 24px;">
+    <div class="stat-card" style="border-left: 4px solid #f97316;">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-info">
+            <h4>{{ peak_hour }}</h4>
+            <p>Jam Tersibuk Hari Ini ({{ peak_count }} booking)</p>
+        </div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid #3b82f6;">
+        <div class="stat-icon"><i class="fas fa-chart-pie"></i></div>
+        <div class="stat-info">
+            <h4>{{ utilization_rate }}%</h4>
+            <p>Tingkat Utilisasi Ruangan</p>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Grafik 7 Hari -->
+    <div class="dashboard-card chart-card">
+        <h3><i class="fas fa-chart-line"></i> Booking 7 Hari Terakhir</h3>
+        <canvas id="weeklyChart"></canvas>
+    </div>
+    
+    <!-- Grafik Utilisasi per Jam -->
+    <div class="dashboard-card chart-card">
+        <h3><i class="fas fa-chart-bar"></i> Utilisasi per Jam (Hari Ini)</h3>
+        <canvas id="hourlyChart"></canvas>
+    </div>
+    
+    <!-- Ruangan Terpopuler -->
+    <div class="dashboard-card">
+        <h3><i class="fas fa-star"></i> Ruangan Terpopuler</h3>
+        {% if popular_rooms %}
+        <ul class="popular-list">
+            {% for room in popular_rooms %}
+            <li>
+                <span class="room-name">{{ room.name }}</span>
+                <span class="booking-count">{{ room.total }} booking</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">Belum ada data booking.</p>
+        {% endif %}
+    </div>
+    
+    <!-- User Teraktif -->
+    <div class="dashboard-card">
+        <h3><i class="fas fa-user-check"></i> User Paling Aktif (Bulan Ini)</h3>
+        {% if top_users %}
+        <ul class="popular-list">
+            {% for u in top_users %}
+            <li>
+                <span class="room-name">{{ u.username }}</span>
+                <span class="booking-count">{{ u.total }} booking</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">Belum ada data booking.</p>
+        {% endif %}
+    </div>
+    
+    <!-- Pie Chart Status Booking -->
+    <div class="dashboard-card chart-card">
+        <h3><i class="fas fa-chart-pie"></i> Status Booking (Bulan Ini)</h3>
+        <canvas id="statusChart"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Grafik 7 Hari
+    const ctx1 = document.getElementById('weeklyChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: {{ last_7_days|safe }},
+            datasets: [{
+                label: 'Jumlah Booking',
+                data: {{ bookings_per_day|safe }},
+                borderColor: '#f97316',
+                backgroundColor: 'rgba(249,115,22,0.1)',
+                fill: true,
+                tension: 0.3,
+                pointBackgroundColor: '#f97316',
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+
+    // Grafik Utilisasi per Jam
+    const ctx2 = document.getElementById('hourlyChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: {{ hourly_labels|safe }},
+            datasets: [{
+                label: 'Jumlah Booking Aktif',
+                data: {{ hourly_data|safe }},
+                backgroundColor: 'rgba(59,130,246,0.6)',
+                borderColor: '#3b82f6',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+
+    // Pie Chart Status Booking
+    const ctx3 = document.getElementById('statusChart').getContext('2d');
+    new Chart(ctx3, {
+        type: 'doughnut',
+        data: {
+            labels: {{ status_labels|safe }},
+            datasets: [{
+                data: {{ status_data|safe }},
+                backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#94a3b8'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "bookings/base.html" %}
+{% block content %}
+<div class="page-header">
+    <h2><i class="fas fa-star"></i> Review {{ room.name }}</h2>
+</div>
+
+<div class="dashboard-card" style="margin-bottom: 20px;">
+    <h3><i class="fas fa-chart-bar"></i> Rating Rata-rata: {{ avg_rating }}/5</h3>
+    <div style="font-size: 2rem; color: #f59e0b;">
+        {% for i in "12345" %}
+            {% if forloop.counter <= avg_rating %}★{% else %}☆{% endif %}
+        {% endfor %}
+        <span style="font-size: 1rem; color: #64748b;">({{ reviews|length }} review)</span>
+    </div>
+</div>
+
+{% if reviews %}
+<div class="table-container">
+<table>
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Rating</th>
+            <th>Komentar</th>
+            <th>Tanggal</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in reviews %}
+        <tr>
+            <td>{{ r.user.username }}</td>
+            <td>
+                <span style="color: #f59e0b;">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= r.rating %}★{% else %}☆{% endif %}
+                    {% endfor %}
+                </span>
+            </td>
+            <td>{{ r.comment|default:'-' }}</td>
+            <td>{{ r.created_at|date:'d/m/Y' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p class="text-muted">Belum ada review untuk ruangan ini.</p>
+{% endif %}
+{% endblock %}

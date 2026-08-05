@@ -1,0 +1,45 @@
+{% extends "bookings/base.html" %}
+{% block content %}
+<div class="page-header">
+    <h2><i class="fas fa-list-ol"></i> Waiting List Saya</h2>
+</div>
+
+{% if waiting_items %}
+<div class="table-container">
+<table>
+    <thead>
+        <tr>
+            <th><i class="fas fa-building"></i> Ruangan</th>
+            <th><i class="far fa-calendar"></i> Tanggal</th>
+            <th><i class="far fa-clock"></i> Jam</th>
+            <th><i class="fas fa-info-circle"></i> Tujuan</th>
+            <th><i class="fas fa-cog"></i> Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for w in waiting_items %}
+        <tr>
+            <td>{{ w.room.name }}</td>
+            <td>{{ w.booking_date|date:'d-m-Y' }}</td>
+            <td>{{ w.start_time|date:'H:i' }} - {{ w.end_time|date:'H:i' }}</td>
+            <td>{{ w.purpose|default:'-' }}</td>
+            <td>
+                <form method="post" action="{% url 'cancel_waiting_list' w.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Keluar dari waiting list?')">
+                        <i class="fas fa-times"></i> <span class="btn-text">Keluar</span>
+                    </button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<div class="text-center mt-3">
+    <i class="fas fa-list-ol fa-3x" style="color: var(--text-muted);"></i>
+    <p class="mt-2">Anda belum masuk waiting list.</p>
+</div>
+{% endif %}
+{% endblock %}

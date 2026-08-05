@@ -1,0 +1,59 @@
+{% extends "bookings/base.html" %}
+{% block content %}
+<div class="page-header">
+    <h2><i class="fas fa-edit"></i> Edit Booking #{{ booking.id }}</h2>
+    <a href="{% url 'admin_bookings' %}" class="btn btn-sm"><i class="fas fa-arrow-left"></i> Kembali</a>
+</div>
+
+<div class="dashboard-card" style="max-width: 600px;">
+    <p><strong>User:</strong> {{ booking.user.username }}</p>
+    <p><strong>Tanggal Awal:</strong> {{ booking.booking_date|date:'Y-m-d' }} | {{ booking.start_time|date:'H:i' }} - {{ booking.end_time|date:'H:i' }}</p>
+    <p><strong>Ruangan Awal:</strong> {{ booking.room.name }}</p>
+    <hr class="mb-2">
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label><i class="fas fa-building"></i> Ruangan</label>
+            <select class="form-control" name="room_id" required>
+                {% for room in rooms %}
+                <option value="{{ room.id }}" {% if room.id == booking.room.id %}selected{% endif %}>{{ room.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label><i class="far fa-calendar"></i> Tanggal</label>
+            <input type="date" class="form-control" name="booking_date" value="{{ booking.booking_date|date:'Y-m-d' }}" required>
+        </div>
+        
+        <div class="row">
+            <div class="form-group col">
+                <label><i class="far fa-clock"></i> Jam Mulai</label>
+                <input type="time" class="form-control" name="start_time" value="{{ booking.start_time|date:'H:i' }}" required>
+            </div>
+            <div class="form-group col">
+                <label><i class="far fa-clock"></i> Jam Selesai</label>
+                <input type="time" class="form-control" name="end_time" value="{{ booking.end_time|date:'H:i' }}" required>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label><i class="fas fa-info-circle"></i> Tujuan</label>
+            <input type="text" class="form-control" name="purpose" value="{{ booking.purpose|default:'' }}">
+        </div>
+        
+        <div class="form-group">
+            <label><i class="fas fa-tag"></i> Status</label>
+            <select class="form-control" name="status">
+                <option value="pending" {% if booking.status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="confirmed" {% if booking.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                <option value="rejected" {% if booking.status == 'rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan Perubahan</button>
+    </form>
+</div>
+{% endblock %}

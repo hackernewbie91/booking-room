@@ -1,0 +1,24 @@
+{% extends "bookings/base.html" %}
+{% block content %}
+<div class="page-header">
+    <h2><i class="fas fa-trash"></i> Hapus Booking #{{ booking.id }}</h2>
+    <a href="{% url 'admin_bookings' %}" class="btn btn-sm"><i class="fas fa-arrow-left"></i> Kembali</a>
+</div>
+
+<div class="dashboard-card text-center" style="max-width: 500px;">
+    <div class="modal-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <h3>Konfirmasi Penghapusan</h3>
+    <p>Anda yakin ingin menghapus booking ini?</p>
+    <p><strong>{{ booking.user.username }}</strong> - {{ booking.room.name }}<br>
+    {{ booking.booking_date|date:'Y-m-d' }} | {{ booking.start_time|date:'H:i' }} - {{ booking.end_time|date:'H:i' }}</p>
+    <p class="text-muted">Tindakan ini tidak dapat dibatalkan.</p>
+    
+    <form method="post" class="mt-3">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Ya, Hapus</button>
+        <a href="{% url 'admin_bookings' %}" class="btn">Batal</a>
+    </form>
+</div>
+{% endblock %}

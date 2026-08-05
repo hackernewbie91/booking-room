@@ -1,0 +1,36 @@
+# Virtual Environment
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Database
+*.db
+*.sqlite3
+
+# Environment variables
+.env
+
+# Media files (uploaded by users)
+media/
+
+# Static files (collected)
+staticfiles/
+
+# Logs
+*.log
+daphne.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup
+backups/

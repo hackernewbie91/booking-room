@@ -1,0 +1,40 @@
+{% extends "bookings/base.html" %}
+{% block content %}
+<div class="auth-split">
+    <div class="auth-branding">
+        <div class="auth-branding-content">
+            <i class="fas fa-calendar-check auth-branding-icon"></i>
+            <h1>RoomBooking</h1>
+            <p class="auth-branding-tagline">Sistem Manajemen Pemesanan Ruangan Perusahaan</p>
+            <p class="auth-branding-desc">Daftar sekarang untuk mulai memesan ruangan dengan mudah dan cepat.</p>
+            <div class="auth-branding-features">
+                <span><i class="fas fa-check-circle"></i> Booking Real-time</span>
+                <span><i class="fas fa-check-circle"></i> Manajemen Ruangan</span>
+                <span><i class="fas fa-check-circle"></i> Riwayat Pemesanan</span>
+            </div>
+        </div>
+    </div>
+    <div class="auth-form-section">
+        <div class="auth-form-card">
+            <h2><i class="fas fa-user-plus"></i> Daftar Akun</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_username"><i class="fas fa-user"></i> Username</label>
+                    <input class="form-control" type="text" name="username" id="id_username" placeholder="Pilih username" required>
+                </div>
+                <div class="form-group">
+                    <label for="id_password1"><i class="fas fa-lock"></i> Password</label>
+                    <input class="form-control" type="password" name="password1" id="id_password1" placeholder="Minimal 8 karakter" required>
+                </div>
+                <div class="form-group">
+                    <label for="id_password2"><i class="fas fa-lock"></i> Konfirmasi Password</label>
+                    <input class="form-control" type="password" name="password2" id="id_password2" placeholder="Ulangi password" required>
+                </div>
+                <button type="submit" class="btn btn-success btn-block"><i class="fas fa-user-plus"></i> <span class="btn-text">Daftar</span></button>
+            </form>
+            <p class="auth-form-footer">Sudah punya akun? <a href="{% url 'login' %}">Login di sini <i class="fas fa-sign-in-alt"></i></a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "bookings/base.html" %}
+{% block content %}
+<div class="page-header">
+    <h2><i class="fas fa-users"></i> Manajemen User</h2>
+    <button class="btn btn-success" onclick="showAddForm()"><i class="fas fa-user-plus"></i> <span class="btn-text">Tambah User</span></button>
+</div>
+
+<!-- Form Tambah User (hidden) -->
+<div id="addUserForm" style="display: none; background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 1.5rem;">
+    <h4><i class="fas fa-user-plus"></i> Tambah User Baru</h4>
+    <form method="post" action="{% url 'add_user' %}">
+        {% csrf_token %}
+        <div class="row">
+            <div class="form-group col">
+                <label><i class="fas fa-user"></i> Username</label>
+                <input class="form-control" name="username" placeholder="Username" required>
+            </div>
+            <div class="form-group col">
+                <label><i class="fas fa-envelope"></i> Email (opsional)</label>
+                <input class="form-control" type="email" name="email" placeholder="Email">
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col">
+                <label><i class="fas fa-lock"></i> Password</label>
+                <input class="form-control" type="password" name="password" placeholder="Minimal 6 karakter" required minlength="6">
+            </div>
+            <div class="form-group col" style="display: flex; align-items: center; padding-top: 1.5rem;">
+                <label class="facility-tag" style="cursor: pointer;">
+                    <input type="checkbox" name="is_admin">
+                    <span><i class="fas fa-shield-alt"></i> Admin</span>
+                </label>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan</button>
+        <button type="button" class="btn" onclick="hideAddForm()"><i class="fas fa-times"></i> Batal</button>
+    </form>
+</div>
+
+<!-- Tabel User -->
+{% if users %}
+<div class="table-container">
+<table>
+    <thead>
+        <tr>
+            <th><i class="fas fa-user"></i> Username</th>
+            <th><i class="fas fa-envelope"></i> Email</th>
+            <th><i class="fas fa-shield-alt"></i> Role</th>
+            <th><i class="far fa-calendar"></i> Bergabung</th>
+            <th><i class="fas fa-cog"></i> Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for u in users %}
+        <tr>
+            <td>{{ u.username }}</td>
+            <td>{{ u.email|default:'-' }}</td>
+            <td>
+                {% if u.is_superuser %}
+                    <span class="badge badge-ongoing">Admin</span>
+                {% else %}
+                    <span class="badge badge-available">User</span>
+                {% endif %}
+            </td>
+            <td>{{ u.date_joined|date:'Y-m-d' }}</td>
+            <td>
+                <div class="flex gap-1">
+                    <a href="{% url 'edit_user' u.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit"></i> <span class="btn-text">Edit</span>
+                    </a>
+                    <button class="btn btn-warning btn-sm" onclick="resetPassword('{{ u.id }}', '{{ u.username }}')">
+                        <i class="fas fa-key"></i> <span class="btn-text">Reset Password</span>
+                    </button>
+                    {% if u.id != user.id %}
+                    <form method="post" action="{% url 'delete_user' u.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Hapus user {{ u.username }}?')">
+                            <i class="fas fa-trash"></i> <span class="btn-text">Hapus</span>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p class="text-muted mt-2">Belum ada user.</p>
+{% endif %}
+
+<!-- Hidden form untuk reset password -->
+<form id="resetPasswordForm" method="post" action="{% url 'reset_password' 0 %}" style="display: none;">
+    {% csrf_token %}
+    <input type="password" name="new_password" id="newPasswordInput">
+</form>
+
+<script>
+function showAddForm() {
+    document.getElementById('addUserForm').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function hideAddForm() {
+    document.getElementById('addUserForm').style.display = 'none';
+}
+
+function resetPassword(userId, username) {
+    const newPassword = prompt('Masukkan password baru untuk ' + username + ' (minimal 6 karakter):');
+    if (!newPassword || newPassword.length < 6) {
+        alert('Password minimal 6 karakter.');
+        return;
+    }
+    const form = document.getElementById('resetPasswordForm');
+    form.action = '/manage/users/reset-password/' + userId + '/';
+    document.getElementById('newPasswordInput').value = newPassword;
+    form.submit();
+}
+</script>
+{% endblock %}

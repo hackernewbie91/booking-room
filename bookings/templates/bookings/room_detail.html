@@ -1,0 +1,384 @@
+{% extends "bookings/base.html" %}
+{% block content %}
+<div class="page-header">
+    <h2><i class="fas fa-door-open"></i> {{ room.name }}</h2>
+</div>
+
+{% if room.image %}
+<img src="{{ room.image.url }}" alt="{{ room.name }}" style="width: 100%; max-height: 350px; object-fit: cover; border-radius: 8px; margin-bottom: 16px;">
+{% endif %}
+
+<!-- Info Ruangan -->
+<div style="display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 24px;">
+    <div style="flex: 1; min-width: 250px;">
+        <p><i class="fas fa-users"></i> <strong>Kapasitas:</strong> {{ room.capacity|default:'-' }}</p>
+        <p><i class="fas fa-info-circle"></i> <strong>Deskripsi:</strong> {{ room.description|default:'Tidak ada deskripsi' }}</p>
+        <p><strong>Fasilitas:</strong>
+            {% if room.facilities.all %}
+                {% for f in room.facilities.all %}
+                    <span class="badge badge-facility">{{ f.name }}</span>
+                {% endfor %}
+            {% else %} -
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<p>
+    <strong>Rating:</strong>
+    <a href="{% url 'room_reviews' room.id %}" style="color: #f59e0b; text-decoration: none;">
+        {% with avg=room.reviews.all|length %}
+            {% if avg > 0 %}
+                ★ {{ avg_rating|default:'0' }}/5 ({{ avg }} review)
+            {% else %}
+                Belum ada rating
+            {% endif %}
+        {% endwith %}
+    </a>
+</p>
+
+<!-- Pilih Tanggal -->
+<div style="background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; box-shadow: var(--shadow-sm);">
+    <h4 style="margin-bottom: 16px;"><i class="far fa-calendar-alt"></i> Cek Ketersediaan</h4>
+    <form method="get" action="{% url 'room_detail' room.id %}" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <input type="date" name="date" class="form-control" value="{{ selected_date|default:'' }}" min="{% now 'Y-m-d' %}" required style="max-width: 250px;">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check-circle"></i> Lihat Ketersediaan</button>
+    </form>
+</div>
+
+{% if selected_date %}
+    <!-- Jadwal Terisi - Tampilan Informatif -->
+    <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+        <h4 style="margin-bottom: 20px; color: #1e3a8a; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+            <i class="far fa-calendar-alt"></i> 
+            Jadwal Tanggal {{ selected_date }}
+        </h4>
+        
+        {% if bookings_today %}
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            {% for b in bookings_today %}
+            <div style="display: flex; flex-wrap: wrap; gap: 16px; padding: 14px 18px; 
+                        {% if b.time_status == 'past' %}
+                            background: #f1f5f9; border-left: 4px solid #94a3b8; opacity: 0.7;
+                        {% elif b.time_status == 'ongoing' %}
+                            background: #fef2f2; border-left: 4px solid #ef4444;
+                        {% elif b.time_status == 'ongoing_no_checkin' %}
+                            background: #fef2f2; border-left: 4px solid #f59e0b;
+                        {% else %}
+                            background: #f8fafc; border-left: 4px solid #10b981;
+                        {% endif %}
+                        border-radius: 0 8px 8px 0; transition: all 0.2s;">
+                
+                <!-- Kolom Waktu -->
+                <div style="min-width: 130px;">
+                    <div style="font-size: 1.1rem; font-weight: 700; 
+                                {% if b.time_status == 'past' %}color: #94a3b8;{% else %}color: #1e293b;{% endif %}">
+                        {{ b.start_time|date:'H:i' }}
+                        <span style="color: #94a3b8; margin: 0 6px;">→</span>
+                        {{ b.end_time|date:'H:i' }}
+                    </div>
+                    <div style="font-size: 0.8rem; margin-top: 2px;">
+                        {% if b.time_status == 'past' %}
+                            <span style="background: #e2e8f0; color: #64748b; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem;">
+                                <i class="fas fa-check-double"></i> Selesai
+                            </span>
+                        {% elif b.time_status == 'ongoing' %}
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; animation: pulse 1.5s infinite;">
+                                <i class="fas fa-clock"></i> Berlangsung
+                            </span>
+                        {% elif b.time_status == 'ongoing_no_checkin' %}
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; animation: pulse 1.5s infinite;">
+                                <i class="fas fa-clock"></i> Berlangsung
+                            </span>
+                            <small style="color: #f59e0b; display: block; margin-top: 2px;">
+                                <i class="fas fa-exclamation-triangle"></i> Belum Check-in
+                            </small>
+                        {% else %}
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem;">
+                                <i class="fas fa-hourglass-start"></i> Akan Datang
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Kolom Info -->
+                <div style="flex: 1; min-width: 200px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                        <span style="font-weight: 600; {% if b.time_status == 'past' %}color: #94a3b8;{% else %}color: #1e293b;{% endif %}">
+                            <i class="fas fa-user-circle" style="color: #f97316;"></i> {{ b.user.username }}
+                        </span>
+                        {% if b.status == 'confirmed' %}
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600;">
+                                <i class="fas fa-check-circle"></i> Disetujui
+                            </span>
+                        {% elif b.status == 'pending' %}
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600;">
+                                <i class="fas fa-clock"></i> Menunggu
+                            </span>
+                        {% endif %}
+                        <!-- Tombol Kalender -->
+                        {% if b.status == 'confirmed' %}
+                        <div style="margin-top: 6px; display: flex; gap: 4px;">
+                            <a href="{{ b.google_calendar_link }}" target="_blank" class="btn btn-sm" style="background: #4285f4; color: #fff; padding: 2px 8px; font-size: 0.7rem;">
+                                <i class="fab fa-google"></i> Google
+                            </a>
+                            <a href="{{ b.outlook_calendar_link }}" target="_blank" class="btn btn-sm" style="background: #0078d4; color: #fff; padding: 2px 8px; font-size: 0.7rem;">
+                                <i class="fab fa-microsoft"></i> Outlook
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if b.purpose %}
+                    <div style="font-size: 0.9rem; {% if b.time_status == 'past' %}color: #94a3b8;{% else %}color: #64748b;{% endif %}">
+                        <i class="fas fa-info-circle" style="color: #3b82f6;"></i> {{ b.purpose }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Ringkasan -->
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 2px solid #e2e8f0; display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.9rem; color: #64748b;">
+            <span><i class="fas fa-list"></i> <strong>{{ bookings_today|length }}</strong> booking</span>
+            <span><i class="far fa-clock"></i> Total jam terpakai: <strong>{{ total_booked_hours|default:'0' }}</strong> jam</span>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 40px 20px;">
+            <i class="far fa-smile fa-3x" style="color: #10b981; margin-bottom: 12px;"></i>
+            <p style="font-size: 1.1rem; color: #1e293b; font-weight: 500;">Semua waktu tersedia!</p>
+            <p style="font-size: 0.9rem; color: #94a3b8;">Silakan ajukan booking pada form di bawah.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Form Booking -->
+    <div style="background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-sm);">
+        <h4 style="margin-bottom: 20px;"><i class="fas fa-pencil-alt"></i> Ajukan Booking Baru</h4>
+        <form method="post" action="{% url 'book_room' %}" id="bookingForm">
+            {% csrf_token %}
+            <input type="hidden" name="room_id" value="{{ room.id }}">
+            <input type="hidden" name="booking_date" value="{{ selected_date }}">
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;">
+                <div class="form-group" style="flex: 1; min-width: 150px;">
+                    <label><i class="far fa-clock"></i> Jam Mulai</label>
+                    <input type="time" name="start_time" class="form-control" required>
+                </div>
+                <div class="form-group" style="flex: 1; min-width: 150px;">
+                    <label><i class="far fa-clock"></i> Jam Selesai</label>
+                    <input type="time" name="end_time" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-info-circle"></i> Tujuan (opsional)</label>
+                <input type="text" name="purpose" class="form-control" placeholder="Tujuan booking">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-users"></i> Peserta Meeting (email, pisahkan dengan koma)</label>
+                <div style="position: relative;">
+                    <input type="text" name="participants" id="participantsInput" class="form-control" 
+                        placeholder="Ketik username atau email, pisahkan dengan koma" autocomplete="off">
+                    <div id="suggestionsDropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 0 0 8px 8px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 8px 20px rgba(0,0,0,0.1);"></div>
+                </div>
+                <div id="participantsPreview" class="participants-preview mt-2"></div>
+            </div>
+
+            <!-- Recurring Toggle -->
+            <div class="form-group">
+                <label class="facility-tag" style="display: inline-flex; cursor: pointer;">
+                    <input type="checkbox" name="is_recurring" id="isRecurring" onchange="toggleRecurring()">
+                    <span><i class="fas fa-sync-alt"></i> Booking Berulang (Recurring)</span>
+                </label>
+            </div>
+            <div id="recurringOptions" style="display: none; background: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Frekuensi</label>
+                        <select name="frequency" class="form-control">
+                            <option value="daily">Harian</option>
+                            <option value="weekly" selected>Mingguan</option>
+                            <option value="biweekly">2 Mingguan</option>
+                            <option value="monthly">Bulanan</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Interval</label>
+                        <input type="number" name="interval" class="form-control" value="1" min="1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Akhir Pengulangan</label>
+                    <input type="date" name="end_date" class="form-control" min="{{ selected_date }}">
+                </div>
+                <div class="form-group">
+                    <label>Hari (untuk mingguan)</label>
+                    <div class="facility-tags">
+                        <label class="facility-tag"><input type="checkbox" name="days_of_week" value="0"> Sen</label>
+                        <label class="facility-tag"><input type="checkbox" name="days_of_week" value="1"> Sel</label>
+                        <label class="facility-tag"><input type="checkbox" name="days_of_week" value="2"> Rab</label>
+                        <label class="facility-tag"><input type="checkbox" name="days_of_week" value="3"> Kam</label>
+                        <label class="facility-tag"><input type="checkbox" name="days_of_week" value="4"> Jum</label>
+                        <label class="facility-tag"><input type="checkbox" name="days_of_week" value="5"> Sab</label>
+                        <label class="facility-tag"><input type="checkbox" name="days_of_week" value="6"> Min</label>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Booking Sekarang</button>
+
+        </form>
+        <!-- ===== TAMBAHKAN DI SINI ===== -->
+        <!-- Tombol Masuk Waiting List -->
+        <div style="margin-top: 20px; padding: 16px; background: #fef9e7; border: 1px solid #f59e0b; border-radius: 8px;">
+            <h5><i class="fas fa-list-ol"></i> Slot penuh? Masuk Waiting List</h5>
+            <p style="font-size: 0.85rem; color: #92400e;">Jika slot yang Anda inginkan sudah terisi, Anda bisa masuk waiting list. Jika ada yang membatalkan, Anda akan otomatis mendapatkan slot tersebut.</p>
+            <form method="post" action="{% url 'add_to_waiting_list' %}">
+                {% csrf_token %}
+                <input type="hidden" name="room_id" value="{{ room.id }}">
+                <input type="hidden" name="booking_date" value="{{ selected_date }}">
+                <div class="row" style="margin-bottom: 8px;">
+                    <div class="form-group col">
+                        <label>Jam Mulai</label>
+                        <input type="time" name="start_time" class="form-control" required>
+                    </div>
+                    <div class="form-group col">
+                        <label>Jam Selesai</label>
+                        <input type="time" name="end_time" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tujuan (opsional)</label>
+                    <input type="text" name="purpose" class="form-control" placeholder="Tujuan booking">
+                </div>
+                <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-list-ol"></i> Masuk Waiting List</button>
+            </form>
+        </div>
+        <!-- ===== SAMPAI SINI ===== -->
+
+  
+    </div>
+{% endif %}
+
+<!-- Modal Error -->
+<div id="errorModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <div class="modal-icon"><i class="fas fa-exclamation-circle"></i></div>
+        <h3>Perhatian</h3>
+        <p id="modalMessage"></p>
+        <button class="btn btn-primary" onclick="closeModal()">Tutup</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleRecurring() {
+        const options = document.getElementById('recurringOptions');
+        const checkbox = document.getElementById('isRecurring');
+        options.style.display = checkbox.checked ? 'block' : 'none';
+    }
+
+    function showModal(msg) {
+        document.getElementById('modalMessage').textContent = msg;
+        document.getElementById('errorModal').style.display = 'flex';
+    }
+    function closeModal() {
+        document.getElementById('errorModal').style.display = 'none';
+    }
+
+    // Participants preview
+    document.addEventListener('DOMContentLoaded', function() {
+        const input = document.getElementById('participantsInput');
+        const preview = document.getElementById('participantsPreview');
+        if (input && preview) {
+            input.addEventListener('input', function() {
+                const emails = this.value.split(',').map(e => e.trim()).filter(e => e);
+                preview.innerHTML = emails.map((email, index) => `
+                    <span class="participant-badge">
+                        <i class="fas fa-envelope"></i> ${email}
+                        <span class="remove-participant" onclick="removeParticipant(${index})">
+                            <i class="fas fa-times-circle"></i>
+                        </span>
+                    </span>
+                `).join('');
+            });
+            input.dispatchEvent(new Event('input'));
+        }
+    });
+
+    function removeParticipant(index) {
+        const input = document.getElementById('participantsInput');
+        const emails = input.value.split(',').map(e => e.trim()).filter(e => e);
+        emails.splice(index, 1);
+        input.value = emails.join(', ');
+        input.dispatchEvent(new Event('input'));
+    }
+
+
+        // Auto-suggestion untuk peserta
+    (function() {
+        const input = document.getElementById('participantsInput');
+        const dropdown = document.getElementById('suggestionsDropdown');
+        let timeout = null;
+
+        if (input && dropdown) {
+            input.addEventListener('input', function() {
+                clearTimeout(timeout);
+                const parts = this.value.split(',');
+                const lastPart = parts.pop().trim();
+                
+                if (lastPart.length >= 2) {
+                    timeout = setTimeout(() => {
+                        fetch('/api/search-users/?q=' + encodeURIComponent(lastPart))
+                            .then(res => res.json())
+                            .then(users => {
+                                if (users.length > 0) {
+                                    dropdown.innerHTML = users.map(u => `
+                                        <div class="suggestion-item" onclick="selectSuggestion('${u.email}')" 
+                                            style="padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.15s;"
+                                            onmouseover="this.style.background='#f1f5f9'" 
+                                            onmouseout="this.style.background='#fff'">
+                                            <div style="font-weight: 600; color: #1e293b;">${u.username}</div>
+                                            <div style="font-size: 0.85rem; color: #64748b;">${u.email}</div>
+                                        </div>
+                                    `).join('');
+                                    dropdown.style.display = 'block';
+                                } else {
+                                    dropdown.style.display = 'none';
+                                }
+                            });
+                    }, 300);
+                } else {
+                    dropdown.style.display = 'none';
+                }
+            });
+
+            // Tutup dropdown saat klik di luar
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('#participantsInput') && !e.target.closest('#suggestionsDropdown')) {
+                    dropdown.style.display = 'none';
+                }
+            });
+        }
+    })();
+
+    function selectSuggestion(email) {
+        const input = document.getElementById('participantsInput');
+        const parts = input.value.split(',');
+        parts.pop(); // hapus bagian terakhir yang belum selesai diketik
+        parts.push(' ' + email);
+        input.value = parts.join(',').trim() + ', ';
+        document.getElementById('suggestionsDropdown').style.display = 'none';
+        input.focus();
+        input.dispatchEvent(new Event('input')); // trigger preview update
+    }
+
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'danger' or message.tags == 'error' or message.tags == 'warning' %}
+                showModal("{{ message|escapejs }}");
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</script>
+{% endblock %}

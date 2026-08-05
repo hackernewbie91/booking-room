@@ -1,0 +1,46 @@
+{% extends "bookings/base.html" %}
+{% block content %}
+<div class="page-header">
+    <h2><i class="fas fa-history"></i> Audit Log</h2>
+</div>
+
+{% if logs %}
+<div class="table-container">
+<table>
+    <thead>
+        <tr>
+            <th><i class="fas fa-user"></i> User</th>
+            <th><i class="fas fa-tag"></i> Aksi</th>
+            <th><i class="fas fa-cube"></i> Model</th>
+            <th><i class="fas fa-info-circle"></i> Deskripsi</th>
+            <th><i class="fas fa-globe"></i> IP</th>
+            <th><i class="far fa-clock"></i> Waktu</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for log in logs %}
+        <tr>
+            <td>{{ log.user.username|default:'System' }}</td>
+            <td>
+                {% if log.action == 'create' %}<span class="badge badge-available">Buat</span>
+                {% elif log.action == 'update' %}<span class="badge badge-pending">Edit</span>
+                {% elif log.action == 'delete' %}<span class="badge badge-ongoing">Hapus</span>
+                {% elif log.action == 'approve' %}<span class="badge badge-available">Setujui</span>
+                {% elif log.action == 'reject' %}<span class="badge badge-ongoing">Tolak</span>
+                {% elif log.action == 'login' %}<span class="badge badge-partial">Login</span>
+                {% elif log.action == 'logout' %}<span class="badge badge-booked-today">Logout</span>
+                {% endif %}
+            </td>
+            <td>{{ log.model_name }}</td>
+            <td>{{ log.description }}</td>
+            <td>{{ log.ip_address|default:'-' }}</td>
+            <td>{{ log.created_at|date:'d-m-Y H:i' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p class="text-muted">Belum ada aktivitas tercatat.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+            padding: 0;
+        }
+        .email-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .email-header {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: #fff;
+            padding: 30px;
+            text-align: center;
+        }
+        .email-header .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        .email-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .email-header p {
+            margin: 8px 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .email-body {
+            padding: 30px;
+        }
+        .greeting {
+            font-size: 16px;
+            color: #0f172a;
+            margin-bottom: 20px;
+        }
+        .info-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .info-row {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-icon {
+            width: 30px;
+            color: #f97316;
+            font-size: 16px;
+        }
+        .info-label {
+            width: 100px;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .info-value {
+            color: #0f172a;
+            font-weight: 600;
+        }
+        .participants-section {
+            margin: 20px 0;
+        }
+        .participants-section h3 {
+            color: #1e3a8a;
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .participant-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .participant-badge {
+            background: #eef2ff;
+            color: #1e3a8a;
+            border: 1px solid #c7d2fe;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .button-wrapper {
+            text-align: center;
+            margin: 25px 0 10px;
+        }
+        .btn-detail {
+            display: inline-block;
+            background: linear-gradient(135deg, #f97316, #fb923c);
+            color: #fff;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            transition: transform 0.2s;
+        }
+        .btn-detail:hover {
+            transform: translateY(-2px);
+        }
+        .email-footer {
+            background: #f8fafc;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+        .email-footer p {
+            margin: 4px 0;
+            font-size: 12px;
+            color: #64748b;
+        }
+        .email-footer .brand {
+            font-weight: 700;
+            color: #1e3a8a;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <!-- Header -->
+        <div class="email-header">
+            <div class="icon">📅</div>
+            <h1>{{ booking.purpose|default:'Undangan Meeting' }}</h1>
+            <p>Anda diundang dalam meeting ini</p>
+        </div>
+        
+        <!-- Body -->
+        <div class="email-body">
+            <div class="greeting">
+                Halo, <strong>{{ participant_email|default:'Peserta' }}</strong>!
+            </div>
+            
+            <p style="color: #475569; font-size: 14px; margin-bottom: 16px;">
+                Anda telah diundang dalam meeting. Berikut detailnya:
+            </p>
+            
+            <!-- Info Card -->
+            <div class="info-card">
+                <div class="info-row">
+                    <span class="info-icon">📅</span>
+                    <span class="info-label">Tanggal</span>
+                    <span class="info-value">{{ booking.booking_date|date:'l, d F Y' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-icon">⏰</span>
+                    <span class="info-label">Jam</span>
+                    <span class="info-value">{{ booking.start_time|date:'H:i' }} - {{ booking.end_time|date:'H:i' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-icon">🏢</span>
+                    <span class="info-label">Ruangan</span>
+                    <span class="info-value">{{ booking.room.name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-icon">👤</span>
+                    <span class="info-label">Pemesan</span>
+                    <span class="info-value">{{ booking.user.username }}</span>
+                </div>
+                {% if booking.room.capacity %}
+                <div class="info-row">
+                    <span class="info-icon">👥</span>
+                    <span class="info-label">Kapasitas</span>
+                    <span class="info-value">{{ booking.room.capacity }} orang</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Participants -->
+            <div class="participants-section">
+                <h3>👥 Peserta Meeting</h3>
+                <div class="participant-list">
+                    {% for p in participants %}
+                    <span class="participant-badge">
+                        ✉️ {{ p }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Button -->
+            <div class="button-wrapper">
+                <a href="{{ detail_url }}" class="btn-detail">
+                    🔗 Lihat Detail Booking
+                </a>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="email-footer">
+            <p class="brand">🏢 RoomBooking Enterprise</p>
+            <p>Sistem Manajemen Pemesanan Ruangan</p>
+            <p style="margin-top: 8px;">
+                <small>Email ini dikirim otomatis. Mohon tidak membalas email ini.</small>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

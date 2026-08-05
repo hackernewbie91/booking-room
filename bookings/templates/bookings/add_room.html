@@ -1,0 +1,49 @@
+{% extends "bookings/base.html" %}
+{% block content %}
+<div class="page-header">
+    <h2><i class="fas fa-plus-circle"></i> Tambah Ruangan Baru</h2>
+</div>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label><i class="fas fa-building"></i> Nama Ruangan</label>
+        <input class="form-control" type="text" name="name" placeholder="Nama ruangan" required>
+    </div>
+    
+    <div class="form-group">
+        <label><i class="fas fa-users"></i> Kapasitas</label>
+        <input class="form-control" type="number" name="capacity" placeholder="Kapasitas (opsional)">
+    </div>
+    
+    <div class="form-group">
+        <label><i class="fas fa-image"></i> Foto Ruangan</label>
+        <input class="form-control" type="file" name="image" accept="image/*">
+        <small class="text-muted">Format: JPG, PNG, GIF, WEBP. Maks 5MB.</small>
+    </div>
+    
+    <div class="form-group">
+        <label><i class="fas fa-pencil-alt"></i> Deskripsi</label>
+        <textarea class="form-control" name="description" rows="3" placeholder="Deskripsi singkat"></textarea>
+    </div>
+    
+    <div class="form-group">
+        <label><i class="fas fa-tags"></i> Fasilitas</label>
+        {% if facilities %}
+        <div class="facility-tags">
+            {% for f in facilities %}
+            <label class="facility-tag">
+                <input type="checkbox" name="facilities" value="{{ f.id }}">
+                <span>{{ f.name }}</span>
+            </label>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted">Belum ada fasilitas. <a href="{% url 'admin_facilities' %}">Tambahkan di sini</a>.</p>
+        {% endif %}
+    </div>
+    
+    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> <span class="btn-text">Simpan</span></button>
+    <a href="{% url 'admin_rooms' %}" class="btn"><i class="fas fa-times"></i> <span class="btn-text">Batal</span></a>
+</form>
+{% endblock %}

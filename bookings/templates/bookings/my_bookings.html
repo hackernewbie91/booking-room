@@ -1,0 +1,153 @@
+{% extends "bookings/base.html" %}
+{% block content %}
+<div class="page-header">
+    <h2><i class="fas fa-list-alt"></i> Booking Saya</h2>
+</div>
+
+{% if bookings %}
+<h4><i class="fas fa-calendar-check"></i> Booking Per Tanggal</h4>
+<div class="table-container">
+<table>
+    <thead>
+        <tr>
+            <th><i class="fas fa-building"></i> Ruangan</th>
+            <th><i class="far fa-calendar"></i> Tanggal</th>
+            <th><i class="far fa-clock"></i> Jam</th>
+            <th><i class="fas fa-info-circle"></i> Tujuan</th>
+            <th><i class="fas fa-tag"></i> Status</th>
+            <th><i class="fas fa-cog"></i> Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for b in bookings %}
+        <tr>
+            <td>{{ b.room.name }}</td>
+            <td>{{ b.booking_date|date:'d-m-Y' }}</td>
+            <td>{{ b.start_time|date:'H:i' }} - {{ b.end_time|date:'H:i' }}</td>
+            <td>{{ b.purpose|default:'-' }}</td>
+            <td>
+                {% if b.status == 'confirmed' %}
+                    <span class="status-badge status-confirmed"><i class="fas fa-check-circle"></i> <span class="btn-text">Dikonfirmasi</span></span>
+                {% elif b.status == 'pending' %}
+                    <span class="status-badge status-pending"><i class="fas fa-clock"></i> <span class="btn-text">Menunggu Persetujuan</span></span>
+                {% elif b.status == 'rejected' %}
+                    <span class="status-badge status-rejected"><i class="fas fa-times-circle"></i> <span class="btn-text">Ditolak</span></span>
+                    {% if b.rejection_reason %}
+                    <br><small style="color: var(--danger);"><i class="fas fa-comment"></i> Alasan: {{ b.rejection_reason }}</small>
+                    {% endif %}
+                {% endif %}
+
+                <!-- ===== TAMBAHKAN DI SINI ===== -->
+                {% if b.booking_date|date:'Y-m-d' < today|date:'Y-m-d' %}
+                    <br><small style="color: #94a3b8;"><i class="fas fa-clock"></i> Sudah lewat</small>
+                {% endif %}
+                <!-- ===== SAMPAI SINI ===== -->
+
+            </td>
+            
+            <td>
+            {% if not b.is_expired %}
+                {% if b.status == 'confirmed' %}
+                    {% if not b.checked_in_at %}
+                    <a href="{% url 'check_in' b.id %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-sign-in-alt"></i> <span class="btn-text">Check-in</span>
+                    </a>
+                    {% elif not b.checked_out_at %}
+                    <a href="{% url 'check_out' b.id %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-sign-out-alt"></i> <span class="btn-text">Check-out</span>
+                    </a>
+                    {% else %}
+                    <span class="badge badge-available"><i class="fas fa-check-double"></i> Selesai</span>
+                    
+                    <!-- Review button (hanya jika sudah check-out) -->
+                    {% if not b.review %}
+                    <a href="{% url 'submit_review' b.id %}" class="btn btn-info btn-sm" style="background: #f59e0b; color: #fff;">
+                        <i class="fas fa-star"></i> <span class="btn-text">Review</span>
+                    </a>
+                    {% else %}
+                    <span class="badge badge-available"><i class="fas fa-star"></i> Reviewed</span>
+                    {% endif %}
+
+                    <!-- ===== TAMBAHKAN DI SINI ===== -->
+                    <!-- Tombol Kalender (Google, Outlook, Download) -->
+                    {% if b.status == 'confirmed' %}
+                    <div style="margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap;">
+                        <a href="{{ b.google_calendar_link }}" target="_blank" class="btn btn-sm" style="background: #4285f4; color: #fff; padding: 4px 8px; font-size: 0.75rem;" title="Tambahkan ke Google Calendar">
+                            <i class="fab fa-google"></i> Google
+                        </a>
+                        <a href="{{ b.outlook_calendar_link }}" target="_blank" class="btn btn-sm" style="background: #0078d4; color: #fff; padding: 4px 8px; font-size: 0.75rem;" title="Tambahkan ke Outlook">
+                            <i class="fab fa-microsoft"></i> Outlook
+                        </a>
+                        <a href="{% url 'download_ics' b.id %}" class="btn btn-sm" style="background: #64748b; color: #fff; padding: 4px 8px; font-size: 0.75rem;" title="Download .ics">
+                            <i class="fas fa-download"></i> .ics
+                        </a>
+                    </div>
+                    {% endif %}
+                    <!-- ===== SAMPAI SINI ===== -->
+                    {% endif %}
+                {% endif %}
+                
+                {% if b.status == 'pending' %}
+                <form method="post" action="{% url 'cancel_booking' b.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Batalkan booking ini?')">
+                        <i class="fas fa-times"></i> <span class="btn-text">Batal</span>
+                    </button>
+                </form>
+                {% endif %}
+            {% else %}
+                {% if b.status == 'confirmed' %}
+                    {% if b.is_expired %}
+                        <span class="badge-kadaluarsa">...</span>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        </td>
+            
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<div class="text-center mt-3">
+    <i class="far fa-frown fa-3x" style="color: var(--text-muted);"></i>
+    <p class="mt-2">Belum ada booking.</p>
+</div>
+{% endif %}
+
+{% if recurring_patterns %}
+<h3 class="mt-3"><i class="fas fa-sync-alt"></i> Booking Berulang Aktif</h3>
+<div class="table-container">
+<table>
+    <thead>
+        <tr>
+            <th><i class="fas fa-building"></i> Ruangan</th>
+            <th><i class="far fa-calendar"></i> Periode</th>
+            <th><i class="far fa-clock"></i> Jam</th>
+            <th><i class="fas fa-redo"></i> Frekuensi</th>
+            <th><i class="fas fa-cog"></i> Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for rp in recurring_patterns %}
+        <tr>
+            <td>{{ rp.room.name }}</td>
+            <td>{{ rp.start_date|date:'Y-m-d' }} - {{ rp.end_date|date:'Y-m-d' }}</td>
+            <td>{{ rp.start_time|date:'H:i' }} - {{ rp.end_time|date:'H:i' }}</td>
+            <td>{{ rp.get_frequency_display }}</td>
+            <td>
+                <form method="post" action="{% url 'cancel_recurring' rp.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Batalkan semua booking berulang ini?')">
+                        <i class="fas fa-times"></i> <span class="btn-text">Batalkan Semua</span>
+                    </button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endif %}
+{% endblock %}

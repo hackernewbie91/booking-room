@@ -1,0 +1,1 @@
+Gunakan redis 8.10 atau lebih tinggi
