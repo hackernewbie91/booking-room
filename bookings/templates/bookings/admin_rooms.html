@@ -1,64 +1,76 @@
 {% extends "bookings/base.html" %}
 {% block content %}
-<div class="page-header">
-    <h2><i class="fas fa-cogs"></i> Kelola Ruangan</h2>
-    <div class="flex gap-2">
-        <a href="{% url 'admin_facilities' %}" class="btn btn-sm"><i class="fas fa-tags"></i> <span class="btn-text">Kelola Fasilitas</span></a>
-        <a href="{% url 'add_room' %}" class="btn btn-success"><i class="fas fa-plus"></i> <span class="btn-text">Tambah Ruangan</span></a>
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h2 class="page-title"><i class="ti ti-building"></i> Kelola Ruangan</h2>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'add_room' %}" class="btn btn-primary">
+                <i class="ti ti-plus"></i> Tambah Ruangan
+            </a>
+            <a href="{% url 'admin_facilities' %}" class="btn btn-outline-secondary">
+                <i class="ti ti-tags"></i> Fasilitas
+            </a>
+        </div>
     </div>
 </div>
-{% if rooms %}
-<div class="table-container">
-<table>
-    <thead>
-        <tr>
-            <th>Foto</th>
-            <th><i class="fas fa-building"></i> Nama</th>
-            <th><i class="fas fa-users"></i> Kapasitas</th>
-            <th><i class="fas fa-tags"></i> Fasilitas</th>
-            <th><i class="fas fa-cog"></i> Aksi</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for room in rooms %}
-        <tr>
-            <td>
-                {% if room.image %}
-                <img src="{{ room.image.url }}" alt="{{ room.name }}" class="admin-room-thumb">
-                {% else %}
-                <span class="text-muted">-</span>
-                {% endif %}
-            </td>
-            <td>{{ room.name }}</td>
-            <td>{{ room.capacity|default:'-' }}</td>
-            <td>
-                {% if room.facilities.all %}
-                    {% for f in room.facilities.all %}
-                        <span class="badge badge-facility">{{ f.name }}</span>
-                    {% endfor %}
-                {% else %}
-                    <span class="text-muted">-</span>
-                {% endif %}
-            </td>
-            <td>
-                <div class="flex gap-1">
-                    <a href="{% url 'edit_room' room.id %}" class="btn btn-action btn-primary">
-                        <i class="fas fa-edit"></i> <span class="btn-text">Edit</span>
-                    </a>
-                    <form method="post" action="{% url 'delete_room' room.id %}" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-action btn-danger" onclick="return confirm('Hapus ruangan ini?')">
-                            <i class="fas fa-trash-alt"></i> <span class="btn-text">Hapus</span>
-                        </button>
-                    </form>
-                </div>
-            </td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="ti ti-list"></i> Daftar Ruangan</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table table-striped">
+            <thead>
+                <tr>
+                    <th>Foto</th>
+                    <th>Nama</th>
+                    <th>Kapasitas</th>
+                    <th>Fasilitas</th>
+                    <th class="w-1">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for room in rooms %}
+                <tr>
+                    <td>
+                        {% if room.image %}
+                        <img src="{{ room.image.url }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
+                        {% else %}
+                        <span class="avatar bg-primary-lt"><i class="ti ti-building-skyscraper"></i></span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="fw-medium">{{ room.name }}</div>
+                    </td>
+                    <td class="text-muted">{{ room.capacity|default:'-' }}</td>
+                    <td>
+                        {% for f in room.facilities.all %}
+                        <span class="badge bg-primary-lt">{{ f.name }}</span>
+                        {% empty %}
+                        <span class="text-muted">-</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'edit_room' room.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                <i class="ti ti-edit"></i> Edit
+                            </a>
+                            <a href="{% url 'delete_room' room.id %}" class="btn btn-sm btn-outline-danger" 
+                               onclick="return confirm('Hapus ruangan ini?')" title="Hapus">
+                                <i class="ti ti-trash"></i> Hapus
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">Belum ada ruangan</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
-{% else %}
-<p class="text-muted mt-2">Tidak ada ruangan.</p>
-{% endif %}
 {% endblock %}

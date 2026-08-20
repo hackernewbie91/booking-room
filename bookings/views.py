@@ -1374,12 +1374,18 @@ def admin_settings(request):
         logo_url = f'/media/logo/{company_logo.value}'
     # -------------------------------------------
 
+    day_choices = [
+        ('0', 'Senin'), ('1', 'Selasa'), ('2', 'Rabu'),
+        ('3', 'Kamis'), ('4', 'Jumat'), ('5', 'Sabtu'), ('6', 'Minggu')
+    ]
+
     return render(request, 'bookings/admin_settings.html', {
         'approval_mode': approval_mode,
         'working_hours_mode': working_hours_mode,
         'work_start': work_start,
         'work_end': work_end,
         'work_days': work_days_list,
+        'day_choices': day_choices,
         'logo_url': logo_url,   # <-- tambahkan ini
     })
     

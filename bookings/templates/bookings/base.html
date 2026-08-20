@@ -3,216 +3,327 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoomBooking Enterprise</title>
+    <title>{% block title %}RoomBooking Enterprise{% endblock %}</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'bookings/tabler/css/tabler.min.css' %}">
+    <link rel="stylesheet" href="{% static 'bookings/tabler/css/tabler-icons.min.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'bookings/style.css' %}?v=67.0">
+
+    <style>
+        body { background: #f5f7fb; }
+        .navbar-brand-image { max-height: 40px; margin-right: 8px; }
+        .notification-bell { position: relative; cursor: pointer; display: flex; align-items: center; }
+        .notification-badge {
+            position: absolute; top: -5px; right: -5px;
+            background: #d63939; color: #fff;
+            border-radius: 50%; width: 18px; height: 18px;
+            font-size: 0.7rem; display: flex; align-items: center; justify-content: center;
+        }
+        .dropdown-menu { min-width: 300px; }
+        .notif-item { padding: 10px 16px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .notif-item.unread { background: #f0f6ff; }
+        .notif-time { font-size: 0.75rem; color: #999; }
+
+        /* Normalisasi font agar tidak terlalu tebal */
+        .navbar-brand span,
+        .page-title,
+        .card-title,
+        .table thead th,
+        .table tbody td:first-child,
+        h2, h3, h4, h5 {
+            font-weight: 500 !important;
+        }
+
+        .table tbody td:first-child {
+            font-weight: 450 !important;
+        }
+
+        .fw-medium {
+            font-weight: 500 !important;
+        }
+
+        /* Restyle semua font */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 400;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .navbar-brand,
+        .navbar-nav .nav-link,
+        .nav-link-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+        }
+
+        .page-title,
+        .card-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .table {
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+        }
+
+        .table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-size: 0.8rem;
+        }
+
+        .table td {
+            font-weight: 400;
+            color: #334155;
+        }
+
+        .btn {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+        }
+
+        .form-label {
+            font-weight: 500;
+        }
+
+        .badge {
+            font-weight: 500;
+        }
+
+       
+        .modal-backdrop {
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        #rejectModal .modal-dialog {
+            position: relative;
+            z-index: 1055;
+        }
+
+        #rejectModal .modal-content {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        #rejectModal .modal-header {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            border-radius: 12px 12px 0 0;
+        }
+
+        #rejectModal .modal-footer {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            border-radius: 0 0 12px 12px;
+        }
+
+    </style>
 </head>
 <body>
-    <div class="page-wrapper">
-        <nav class="navbar">
-            <div class="container nav-container">
-                <a href="{% url 'index' %}" class="logo" style="display: flex; align-items: center; gap: 10px;">
-                    {% if logo_url %}
-                        <img src="{{ logo_url }}" alt="Logo" style="max-height: 40px; max-width: 150px;">
-                    {% else %}
-                        <i class="fas fa-building"></i>
-                    {% endif %}
-                    {% if company_name %}
-                        <span style="font-size: 1.1rem; font-weight: 700; color: #fff;">{{ company_name }}</span>
-                    {% else %}
-                        <span style="font-size: 1.1rem; font-weight: 700; color: #fff;">RoomBooking</span>
-                    {% endif %}
-                </a>
-                <button class="hamburger" aria-label="Menu" onclick="toggleMenu()">
-                    <i class="fas fa-bars"></i>
+    <div class="page">
+        <header class="navbar navbar-expand-md navbar-light d-print-none">
+            <div class="container-xl">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
+                    <span class="navbar-toggler-icon"></span>
                 </button>
-                <ul class="nav-links" id="navLinks">
-                    <li><a href="{% url 'index' %}"><i class="fas fa-door-open"></i> <span class="nav-text">Ruangan</span></a></li>
-                    {% if user.is_authenticated %}
-                        <li><a href="{% url 'my_waiting_list' %}"><i class="fas fa-list-ol"></i> <span class="nav-text">Waiting List</span></a></li>
-                        <li><a href="{% url 'my_bookings' %}"><i class="fas fa-calendar-alt"></i> <span class="nav-text">Booking Saya</span></a></li>
-                        {% if user.is_superuser %}
-                        <li><a href="{% url 'admin_bookings' %}"><i class="fas fa-list"></i> <span class="nav-text">Semua Booking</span></a></li>
-                            <li class="nav-dropdown">
-                                <a href="#" onclick="toggleDropdown(event)" class="dropdown-toggle">
-                                    <i class="fas fa-cogs"></i> <span class="nav-text">Pengaturan</span> <i class="fas fa-chevron-down"></i>
-                                </a>
-                                <ul class="dropdown-menu" id="adminDropdown">
-                                    <li><a href="{% url 'manage_users' %}"><i class="fas fa-users"></i> Manajemen User</a></li>
-                                    <li><a href="{% url 'admin_rooms' %}"><i class="fas fa-door-closed"></i> Kelola Ruangan</a></li>
-                                    <li><a href="{% url 'admin_facilities' %}"><i class="fas fa-tags"></i> Fasilitas</a></li>
-                                    <li><a href="{% url 'admin_settings' %}"><i class="fas fa-toggle-on"></i> Mode Persetujuan</a></li>
-                                    <li><a href="{% url 'company_identity' %}"><i class="fas fa-building"></i> Identitas Perusahaan</a></li>
-                                    <li><a href="{% url 'audit_log' %}"><i class="fas fa-history"></i> Audit Log</a></li>
-                                </ul>
-                            </li>
-                            <li><a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> <span class="nav-text">Dashboard</span></a></li>
-                        {% endif %}
-                        <!-- Bell Notifikasi -->
-                        <li style="position: relative;">
-                            <span class="notification-bell" onclick="toggleNotification()">
-                                <i class="fas fa-bell"></i>
-                                <span class="notification-badge" id="notifBadge">0</span>
-                            </span>
-                            <div class="notification-dropdown" id="notifDropdown">
-                                <div id="notifList"><div class="notification-empty">🔔 Memuat...</div></div>
-                                <div class="notif-mark-read" onclick="markAllRead()">Tandai semua sudah dibaca</div>
-                            </div>
-                        </li>
-                        <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> <span class="nav-text">Logout ({{ user.username }})</span></a></li>
+                <a href="{% url 'index' %}" class="navbar-brand d-flex align-items-center">
+                    {% if logo_url %}
+                        <img src="{{ logo_url }}" alt="Logo" class="navbar-brand-image">
                     {% else %}
-                        <li><a href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> <span class="nav-text">Login</span></a></li>
-                        <li><a href="{% url 'register' %}"><i class="fas fa-user-plus"></i> <span class="nav-text">Daftar</span></a></li>
+                        <i class="ti ti-building-skyscraper"></i>
                     {% endif %}
-                </ul>
-            </div>
-        </nav>
+                    <span style="font-weight: 500;">{{ company_name|default:"RoomBooking" }}</span>
+                </a>
 
-        <main class="container main-content">
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}">
-                        {% if message.tags == 'success' %}<i class="fas fa-check-circle"></i>
-                        {% elif message.tags == 'danger' or message.tags == 'error' %}<i class="fas fa-exclamation-circle"></i>
-                        {% elif message.tags == 'warning' %}<i class="fas fa-exclamation-triangle"></i>
-                        {% elif message.tags == 'info' %}<i class="fas fa-info-circle"></i>
-                        {% endif %}
-                        {{ message }}
+                <div class="navbar-nav flex-row order-md-last">
+                    <!-- Search field -->
+                    <div class="nav-item d-none d-md-flex me-3 align-items-center">
+                        <form class="d-flex" method="get" action="{% url 'index' %}">
+                            <input type="text" name="q" class="form-control" placeholder="Cari ruangan..." style="width: 200px;">
+                        </form>
                     </div>
-                {% endfor %}
-            {% endif %}
-            {% block content %}{% endblock %}
-        </main>
 
-        <footer class="footer">
-            <div class="container">
-                &copy; 2026 RoomBooking Enterprise — Sistem Manajemen Ruangan
+                    {% if user.is_authenticated %}
+                        <!-- Bell icon -->
+                        <div class="nav-item d-flex align-items-center me-3">
+                            <a href="javascript:void(0)" class="notification-bell" onclick="toggleNotification(event)" style="margin-right: 24px;">
+                                <i class="fa fa-bell" style="font-size: 1.5rem;"></i>
+                                <span class="notification-badge" id="notifBadge" style="display: none;">0</span>
+                            </a>
+                            <div id="notifDropdown" style="display: none; position: absolute; top: calc(100% + 10px); right: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; min-width: 300px; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                                <div class="p-3 border-bottom"><strong>Notifikasi</strong></div>
+                                <div id="notifList" style="max-height: 400px; overflow-y: auto;"></div>
+                                <div class="p-2 text-center border-top">
+                                    <button class="btn btn-sm btn-link" onclick="markAllRead()">Tandai semua dibaca</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- User account dropdown -->
+                        <div class="nav-item dropdown d-flex align-items-center">
+                            <a href="javascript:void(0)" class="nav-link d-flex lh-1 text-reset p-0" onclick="toggleUserDropdown(event)">
+                            <!-- <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown"> -->
+                                <span class="avatar avatar-sm" style="background-image: url('https://ui-avatars.com/api/?name={{ user.username|default:'Guest' }}')"></span>
+                                <div class="d-none d-xl-block ps-2">
+                                    <div>{{ user.username|default:"Guest" }}</div>
+                                </div>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end" id="userDropdown" style="display: none; position: absolute; top: 100%; right: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; min-width: 220px; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                                <a href="{% url 'my_bookings' %}" class="dropdown-item">
+                                    <i class="ti ti-calendar"></i> Booking Saya
+                                </a>
+                                {% if user.is_superuser %}
+                                <a href="{% url 'dashboard' %}" class="dropdown-item">
+                                    <i class="ti ti-dashboard"></i> Dashboard
+                                </a>
+                                <a href="{% url 'company_identity' %}" class="dropdown-item">
+                                    <i class="ti ti-building"></i> Identitas Perusahaan
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'logout' %}" class="dropdown-item text-danger">
+                                    <i class="ti ti-logout"></i> Logout
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="nav-link" 
+                        style="color: #2563eb; font-weight: 500; transition: color 0.2s;"
+                        onmouseover="this.style.color='#1e40af'" 
+                        onmouseout="this.style.color='#2563eb'">
+                            Login
+                        </a>
+                        <a href="{% url 'register' %}" class="nav-link" 
+                        style="color: #16a34a; font-weight: 500; margin-left: 16px; transition: color 0.2s;"
+                        onmouseover="this.style.color='#15803d'" 
+                        onmouseout="this.style.color='#16a34a'">
+                            Daftar
+                        </a>
+                    {% endif %}
+                </div>
             </div>
-        </footer>
+        </header>
+
+        <!-- Navbar Menu Utama -->
+        <div class="navbar-expand-md">
+            <div class="collapse navbar-collapse" id="navbar-menu">
+                <div class="navbar navbar-light">
+                    <div class="container-xl">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'index' %}" 
+                                style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 6px; font-weight: 500;">
+                                    <i class="ti ti-building-skyscraper" style="font-size: 1.25rem; color: #2563eb;"></i>
+                                    <span style="color: #1e293b;">Ruangan</span>
+                                </a>
+                            </li>
+                            {% if user.is_authenticated %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'my_bookings' %}" 
+                                style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 6px; font-weight: 500;">
+                                    <i class="fa fa-calendar" style="font-size: 1.25rem; color: #2563eb;"></i>
+                                    <span style="color: #1e293b;">Booking Saya</span>
+                                </a>
+                            </li>
+
+                            {% if user.is_superuser %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'admin_bookings' %}" 
+                                style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 6px; font-weight: 500;">
+                                    <i class="fa fa-list" style="font-size: 1.25rem; color: #2563eb;"></i>
+                                    <span style="color: #1e293b;">Semua Booking</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if user.is_superuser %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"
+                                style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 6px; font-weight: 500;">
+                                    <i class="fa fa-gear" style="font-size: 1.25rem; color: #2563eb;"></i>
+                                    <span style="color: #1e293b;">Pengaturan</span>
+                                </a>
+                                <div class="dropdown-menu">
+                                    <a href="{% url 'manage_users' %}" class="dropdown-item"><i class="ti ti-users"></i> Manajemen User</a>
+                                    <a href="{% url 'admin_rooms' %}" class="dropdown-item"><i class="ti ti-door"></i> Kelola Ruangan</a>
+                                    <!-- <a href="{% url 'admin_bookings' %}" class="dropdown-item"><i class="ti ti-list"></i> Semua Booking</a> -->
+                                    <a href="{% url 'admin_facilities' %}" class="dropdown-item"><i class="ti ti-tag"></i> Fasilitas</a>
+                                    <a href="{% url 'admin_settings' %}" class="dropdown-item">
+                                        <i class="fa fa-toggle-on" style="color: #2563eb;"></i> Mode Persetujuan
+                                    </a>
+                                    <a href="{% url 'company_identity' %}" class="dropdown-item"><i class="ti ti-building"></i> Identitas Perusahaan</a>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'dashboard' %}" 
+                                style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 6px; font-weight: 500;">
+                                    <i class="fa fa-tachometer" style="font-size: 1.25rem; color: #2563eb;"></i>
+                                    <span style="color: #1e293b;">Dashboard</span>
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Konten Utama -->
+        <div class="page-wrapper">
+            <div class="page-body">
+                <div class="container-xl">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+                                <i class="ti ti-{{ message.tags }}"></i> {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </div>
     </div>
 
-    {% block scripts %}{% endblock %}
+    <script src="{% static 'bookings/tabler/js/tabler.min.js' %}"></script>
     <script>
-        function toggleMenu() {
-            document.getElementById('navLinks').classList.toggle('show');
-        }
-        
-        function toggleDropdown(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var dropdown = document.getElementById('adminDropdown');
-            dropdown.classList.toggle('show-dropdown');
-        }
-        
-        // WebSocket Notification
-        let socket = null;
-
-        function connectWebSocket() {
-            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = wsProtocol + '//' + window.location.host + '/ws/notifications/';
-            socket = new WebSocket(wsUrl);
-            
-            socket.onopen = function(e) { console.log('🔔 WebSocket terhubung'); };
-            socket.onmessage = function(e) {
-                const data = JSON.parse(e.data);
-                updateNotificationUI(data);
-            };
-            socket.onclose = function(e) {
-                console.log('🔌 WebSocket terputus, menyambung ulang...');
-                setTimeout(connectWebSocket, 5000);
-            };
-            socket.onerror = function(e) { console.error('❌ WebSocket error'); };
-        }
-
-        function updateNotificationUI(data) {
-            const badge = document.getElementById('notifBadge');
-            const list = document.getElementById('notifList');
-            if (!badge || !list) return;
-            if (data.unread_count > 0) {
-                badge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
-                badge.style.display = 'flex';
-                badge.classList.add('show');
-            } else {
-                badge.style.display = 'none';
-                badge.classList.remove('show');
-            }
-            if (data.notifications && data.notifications.length > 0) {
-                list.innerHTML = data.notifications.map(n => `
-                    <div class="notification-item ${n.is_read ? '' : 'unread'}" onclick="readNotification(${n.id})">
-                        <div>${n.message.replace(/^\[(.*?)\]/, '<span style="color: #f97316; font-weight: 700;">[$1]</span>')}</div>
-                    </div>
-                `).join('');
-            } else {
-                list.innerHTML = '<div class="notification-empty">🔔 Belum ada notifikasi</div>';
+        function toggleNotification(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            const dropdown = document.getElementById('notifDropdown');
+            if (dropdown) {
+                dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
             }
         }
-
-        function readNotification(id) {
-            fetch('/api/notifications/read/' + id + '/', { 
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken')
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    const item = document.querySelector(`.notification-item[onclick*="${id}"]`);
-                    if (item) {
-                        item.style.opacity = '0';
-                        item.style.transform = 'translateX(20px)';
-                        setTimeout(() => {
-                            item.remove();
-                            updateBadgeAfterRemove();
-                            const list = document.getElementById('notifList');
-                            if (list && list.querySelectorAll('.notification-item').length === 0) {
-                                list.innerHTML = '<div class="notification-empty">🔔 Belum ada notifikasi</div>';
-                            }
-                        }, 300);
-                    }
-                }
-            });
-        }
-
-        function updateBadgeAfterRemove() {
-            const badge = document.getElementById('notifBadge');
-            if (!badge) return;
-            let currentCount = parseInt(badge.textContent) || 0;
-            if (currentCount > 1) {
-                badge.textContent = currentCount - 1;
-            } else {
-                badge.style.display = 'none';
-                badge.textContent = '0';
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('notifDropdown');
+            if (dropdown && !e.target.closest('.notification-bell') && !e.target.closest('#notifDropdown')) {
+                dropdown.style.display = 'none';
             }
-        }
-
+        });
         function markAllRead() {
-            fetch('/api/notifications/read-all/', { 
+            fetch('/api/notifications/read-all/', {
                 method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const list = document.getElementById('notifList');
-                    if (list) {
-                        list.innerHTML = '<div class="notification-empty">✅ Semua notifikasi telah dibaca</div>';
-                    }
-                    const badge = document.getElementById('notifBadge');
-                    if (badge) {
-                        badge.style.display = 'none';
-                        badge.textContent = '0';
-                    }
-                }
-            });
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            }).then(() => fetchNotifications());
         }
-
-        // Fungsi untuk mendapatkan CSRF token dari cookie
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -227,25 +338,58 @@
             }
             return cookieValue;
         }
+        function fetchNotifications() {
+            fetch('/api/notifications/')
+                .then(res => res.json())
+                .then(data => {
+                    const badge = document.getElementById('notifBadge');
+                    const list = document.getElementById('notifList');
+                    if (data.unread_count > 0) {
+                        badge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                    if (data.notifications && data.notifications.length > 0) {
+                        list.innerHTML = data.notifications.map(n => `
+                            <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="readNotification(${n.id})">
+                                <div>${n.message}</div>
+                                <div class="notif-time">${n.created_at}</div>
+                            </div>`).join('');
+                    } else {
+                        list.innerHTML = '<div class="p-3 text-center text-muted">Belum ada notifikasi</div>';
+                    }
+                });
+        }
+        function readNotification(id) {
+            fetch('/api/notifications/read/' + id + '/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            }).then(() => fetchNotifications());
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchNotifications();
+            setInterval(fetchNotifications, 10000);
+        });
 
-        function toggleNotification() {
-            const dropdown = document.getElementById('notifDropdown');
-            if (dropdown) dropdown.classList.toggle('show');
+        function toggleUserDropdown(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) {
+                dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
+            }
         }
 
         document.addEventListener('click', function(e) {
-            const dropdown = document.getElementById('notifDropdown');
-            if (dropdown && !e.target.closest('.notification-bell') && !e.target.closest('.notification-dropdown')) {
-                dropdown.classList.remove('show');
+            const userDropdown = document.getElementById('userDropdown');
+            if (userDropdown && !e.target.closest('[onclick*="toggleUserDropdown"]') && !e.target.closest('#userDropdown')) {
+                userDropdown.style.display = 'none';
             }
         });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            connectWebSocket();
-        });
-
-        
-
     </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

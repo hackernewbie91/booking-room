@@ -1,121 +1,108 @@
 {% extends "bookings/base.html" %}
 {% block content %}
-<div class="page-header">
-    <h2><i class="fas fa-users"></i> Manajemen User</h2>
-    <button class="btn btn-success" onclick="showAddForm()"><i class="fas fa-user-plus"></i> <span class="btn-text">Tambah User</span></button>
+<div class="page-header mb-4">
+    <div class="row align-items-center">
+        <div class="col">
+            <h2 class="page-title"><i class="ti ti-users"></i> Manajemen User</h2>
+        </div>
+        <div class="col-auto">
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('addUserForm').style.display='block'">
+                <i class="ti ti-user-plus"></i> Tambah User
+            </button>
+        </div>
+    </div>
 </div>
 
-<!-- Form Tambah User (hidden) -->
-<div id="addUserForm" style="display: none; background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 1.5rem;">
-    <h4><i class="fas fa-user-plus"></i> Tambah User Baru</h4>
-    <form method="post" action="{% url 'add_user' %}">
-        {% csrf_token %}
-        <div class="row">
-            <div class="form-group col">
-                <label><i class="fas fa-user"></i> Username</label>
-                <input class="form-control" name="username" placeholder="Username" required>
+<!-- Form Tambah User -->
+<div id="addUserForm" class="card mb-4" style="display: none;">
+    <div class="card-header">
+        <h3 class="card-title"><i class="ti ti-user-plus"></i> Tambah User Baru</h3>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{% url 'add_user' %}">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
             </div>
-            <div class="form-group col">
-                <label><i class="fas fa-envelope"></i> Email (opsional)</label>
-                <input class="form-control" type="email" name="email" placeholder="Email">
-            </div>
-        </div>
-        <div class="row">
-            <div class="form-group col">
-                <label><i class="fas fa-lock"></i> Password</label>
-                <input class="form-control" type="password" name="password" placeholder="Minimal 6 karakter" required minlength="6">
-            </div>
-            <div class="form-group col" style="display: flex; align-items: center; padding-top: 1.5rem;">
-                <label class="facility-tag" style="cursor: pointer;">
-                    <input type="checkbox" name="is_admin">
-                    <span><i class="fas fa-shield-alt"></i> Admin</span>
+            <div class="mt-3">
+                <label class="form-check form-switch">
+                    <input type="checkbox" name="is_admin" class="form-check-input">
+                    <span class="form-check-label">Admin (Superuser)</span>
                 </label>
             </div>
-        </div>
-        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan</button>
-        <button type="button" class="btn" onclick="hideAddForm()"><i class="fas fa-times"></i> Batal</button>
-    </form>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary"><i class="ti ti-device-floppy"></i> Simpan</button>
+                <button type="button" class="btn btn-outline-secondary" 
+                        onclick="document.getElementById('addUserForm').style.display='none'">Batal</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- Tabel User -->
-{% if users %}
-<div class="table-container">
-<table>
-    <thead>
-        <tr>
-            <th><i class="fas fa-user"></i> Username</th>
-            <th><i class="fas fa-envelope"></i> Email</th>
-            <th><i class="fas fa-shield-alt"></i> Role</th>
-            <th><i class="far fa-calendar"></i> Bergabung</th>
-            <th><i class="fas fa-cog"></i> Aksi</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for u in users %}
-        <tr>
-            <td>{{ u.username }}</td>
-            <td>{{ u.email|default:'-' }}</td>
-            <td>
-                {% if u.is_superuser %}
-                    <span class="badge badge-ongoing">Admin</span>
-                {% else %}
-                    <span class="badge badge-available">User</span>
-                {% endif %}
-            </td>
-            <td>{{ u.date_joined|date:'Y-m-d' }}</td>
-            <td>
-                <div class="flex gap-1">
-                    <a href="{% url 'edit_user' u.id %}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-edit"></i> <span class="btn-text">Edit</span>
-                    </a>
-                    <button class="btn btn-warning btn-sm" onclick="resetPassword('{{ u.id }}', '{{ u.username }}')">
-                        <i class="fas fa-key"></i> <span class="btn-text">Reset Password</span>
-                    </button>
-                    {% if u.id != user.id %}
-                    <form method="post" action="{% url 'delete_user' u.id %}" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Hapus user {{ u.username }}?')">
-                            <i class="fas fa-trash"></i> <span class="btn-text">Hapus</span>
-                        </button>
-                    </form>
-                    {% endif %}
-                </div>
-            </td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="ti ti-list"></i> Daftar Pengguna</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table table-striped">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Bergabung</th>
+                    <th class="w-1">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="avatar avatar-sm" style="background-image: url('https://ui-avatars.com/api/?name={{ u.username }}')"></span>
+                            <span class="fw-normal">{{ u.username }}</span>
+                        </div>
+                    </td>
+                    <td class="text-muted">{{ u.email|default:'-' }}</td>
+                    <td>
+                        {% if u.is_superuser %}
+                        <span class="badge bg-red-lt text-red">Admin</span>
+                        {% else %}
+                        <span class="badge bg-green-lt text-green">User</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted">{{ u.date_joined|date:'d-m-Y' }}</td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'edit_user' u.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                <i class="ti ti-edit"></i> Edit
+                            </a>
+                            <a href="{% url 'delete_user' u.id %}" class="btn btn-sm btn-outline-danger" 
+                               onclick="return confirm('Hapus user ini?')" title="Hapus">
+                                <i class="ti ti-trash"></i> Hapus
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">Belum ada user</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
-{% else %}
-<p class="text-muted mt-2">Belum ada user.</p>
-{% endif %}
-
-<!-- Hidden form untuk reset password -->
-<form id="resetPasswordForm" method="post" action="{% url 'reset_password' 0 %}" style="display: none;">
-    {% csrf_token %}
-    <input type="password" name="new_password" id="newPasswordInput">
-</form>
-
-<script>
-function showAddForm() {
-    document.getElementById('addUserForm').style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function hideAddForm() {
-    document.getElementById('addUserForm').style.display = 'none';
-}
-
-function resetPassword(userId, username) {
-    const newPassword = prompt('Masukkan password baru untuk ' + username + ' (minimal 6 karakter):');
-    if (!newPassword || newPassword.length < 6) {
-        alert('Password minimal 6 karakter.');
-        return;
-    }
-    const form = document.getElementById('resetPasswordForm');
-    form.action = '/manage/users/reset-password/' + userId + '/';
-    document.getElementById('newPasswordInput').value = newPassword;
-    form.submit();
-}
-</script>
 {% endblock %}

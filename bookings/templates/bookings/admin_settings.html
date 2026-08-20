@@ -1,99 +1,80 @@
 {% extends "bookings/base.html" %}
 {% block content %}
-<div class="page-header">
-    <h2><i class="fas fa-cogs"></i> Pengaturan Sistem</h2>
+<div class="page-header mb-4">
+    <h2 class="page-title"><i class="ti ti-settings"></i> Pengaturan</h2>
 </div>
 
-<!-- Mode Persetujuan (Form Terpisah) -->
-<div class="dashboard-card" style="margin-bottom: 24px;">
-    <h3><i class="fas fa-check-circle"></i> Mode Persetujuan Booking</h3>
-    <p class="text-muted mb-2">
-        <strong>ON:</strong> Setiap booking harus disetujui admin terlebih dahulu.<br>
-        <strong>OFF:</strong> Booking langsung dikonfirmasi tanpa persetujuan.
-    </p>
-    <form method="post">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="approval_mode">
-        <div class="form-group" style="display: flex; align-items: center; gap: 12px;">
-            <label class="switch">
-                <input type="checkbox" name="approval_mode" value="on" 
-                       {% if approval_mode %}checked{% endif %}
-                       onchange="this.form.submit()">
-                <span class="slider round"></span>
+<div class="card mb-4">
+    <div class="card-header"><h3 class="card-title">Mode Persetujuan</h3></div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="approval_mode">
+            <label class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="approval_mode" value="on" 
+                       {% if approval_mode %}checked{% endif %} onchange="this.form.submit()">
+                <span class="form-check-label">
+                    {% if approval_mode %}ON{% else %}OFF{% endif %}
+                </span>
             </label>
-            <span style="font-size: 1.1rem; font-weight: 600;">
-                {% if approval_mode %}
-                    <span style="color: var(--accent);"><i class="fas fa-toggle-on"></i> ON - Butuh Persetujuan</span>
-                {% else %}
-                    <span style="color: var(--success);"><i class="fas fa-toggle-off"></i> OFF - Langsung Dikonfirmasi</span>
-                {% endif %}
-            </span>
-        </div>
-        <input type="hidden" name="approval_mode_hidden" value="{% if approval_mode %}off{% else %}on{% endif %}">
-        <noscript><button type="submit" class="btn btn-primary btn-sm">Simpan</button></noscript>
-    </form>
+        </form>
+    </div>
 </div>
 
-<!-- Mode Jam Kerja (Form Terpisah) -->
-<div class="dashboard-card">
-    <h3><i class="fas fa-clock"></i> Mode Jam Kerja</h3>
-    <form method="post">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="working_hours_mode">
-        
-        <!-- Toggle Mode -->
-        <div class="form-group" style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-            <label class="switch">
-                <input type="checkbox" name="working_hours_mode" value="working" 
-                       {% if working_hours_mode == 'working' %}checked{% endif %}
-                       onchange="toggleWorkingHours(this)">
-                <span class="slider round"></span>
-            </label>
-            <span style="font-size: 1.1rem; font-weight: 600;">
-                {% if working_hours_mode == 'working' %}
-                    <span style="color: var(--accent);"><i class="fas fa-calendar-check"></i> Mode Jam Kerja</span>
-                {% else %}
-                    <span style="color: var(--success);"><i class="fas fa-calendar"></i> Mode Bebas</span>
-                {% endif %}
-            </span>
-            <input type="hidden" name="working_hours_mode_hidden" value="{% if working_hours_mode == 'working' %}free{% else %}working{% endif %}">
-        </div>
-        
-        <!-- Opsi Jam Kerja -->
-        <div id="workingHoursOptions" style="display: {% if working_hours_mode == 'working' %}block{% else %}none{% endif %};">
-            <div class="row" style="margin-bottom: 16px;">
-                <div class="form-group col">
-                    <label><i class="far fa-clock"></i> Jam Mulai Kerja</label>
-                    <input type="time" name="work_start" class="form-control" value="{{ work_start }}">
-                </div>
-                <div class="form-group col">
-                    <label><i class="far fa-clock"></i> Jam Selesai Kerja</label>
-                    <input type="time" name="work_end" class="form-control" value="{{ work_end }}">
-                </div>
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="ti ti-clock"></i> Mode Jam Kerja</h3>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="working_hours_mode">
+
+            <div class="mb-3">
+                <label class="form-check form-switch">
+                    <input type="checkbox" name="working_hours_mode" value="working" class="form-check-input" 
+                           {% if working_hours_mode == 'working' %}checked{% endif %}
+                           onchange="this.form.submit()">
+                    <span class="form-check-label">
+                        {% if working_hours_mode == 'working' %}
+                            Mode Jam Kerja Aktif
+                        {% else %}
+                            Mode Jam Kerja Nonaktif (Bebas)
+                        {% endif %}
+                    </span>
+                </label>
             </div>
-            
-            <div class="form-group">
-                <label><i class="fas fa-calendar-week"></i> Hari Kerja</label>
-                <div class="facility-tags">
-                    {% for i in "0123456" %}
-                    <label class="facility-tag">
-                        <input type="checkbox" name="work_days" value="{{ i }}" 
-                               {% if i in work_days %}checked{% endif %}>
-                        {% if i == '0' %}Sen{% elif i == '1' %}Sel{% elif i == '2' %}Rab{% elif i == '3' %}Kam{% elif i == '4' %}Jum{% elif i == '5' %}Sab{% else %}Min{% endif %}
-                    </label>
+
+            <div id="workingHoursOptions" style="display: {% if working_hours_mode == 'working' %}block{% else %}none{% endif %};">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Jam Mulai</label>
+                        <input type="time" name="work_start" class="form-control" value="{{ work_start }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Jam Selesai</label>
+                        <input type="time" name="work_end" class="form-control" value="{{ work_end }}">
+                    </div>
+                </div>
+
+                <label class="form-label">Hari Kerja</label>
+                <div class="row g-2">
+                    {% for day_code, day_name in day_choices %}
+                    <div class="col-auto">
+                        <label class="form-check">
+                            <input class="form-check-input" type="checkbox" name="work_days" value="{{ day_code }}"
+                                {% if day_code in work_days %}checked{% endif %}>
+                            <span class="form-check-label">{{ day_name }}</span>
+                        </label>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
-        </div>
-        
-        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan Pengaturan Jam Kerja</button>
-    </form>
-</div>
 
-<script>
-function toggleWorkingHours(checkbox) {
-    const options = document.getElementById('workingHoursOptions');
-    options.style.display = checkbox.checked ? 'block' : 'none';
-}
-</script>
+            <button type="submit" class="btn btn-primary mt-3">
+                <i class="ti ti-device-floppy"></i> Simpan Pengaturan Jam Kerja
+            </button>
+        </form>
+    </div>
+</div>
 {% endblock %}

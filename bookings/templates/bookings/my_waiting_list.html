@@ -1,45 +1,43 @@
 {% extends "bookings/base.html" %}
 {% block content %}
-<div class="page-header">
-    <h2><i class="fas fa-list-ol"></i> Waiting List Saya</h2>
+<div class="page-header mb-4">
+    <h2 class="page-title"><i class="ti ti-list"></i> Waiting List Saya</h2>
 </div>
 
 {% if waiting_items %}
-<div class="table-container">
-<table>
-    <thead>
-        <tr>
-            <th><i class="fas fa-building"></i> Ruangan</th>
-            <th><i class="far fa-calendar"></i> Tanggal</th>
-            <th><i class="far fa-clock"></i> Jam</th>
-            <th><i class="fas fa-info-circle"></i> Tujuan</th>
-            <th><i class="fas fa-cog"></i> Aksi</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for w in waiting_items %}
-        <tr>
-            <td>{{ w.room.name }}</td>
-            <td>{{ w.booking_date|date:'d-m-Y' }}</td>
-            <td>{{ w.start_time|date:'H:i' }} - {{ w.end_time|date:'H:i' }}</td>
-            <td>{{ w.purpose|default:'-' }}</td>
-            <td>
-                <form method="post" action="{% url 'cancel_waiting_list' w.id %}" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Keluar dari waiting list?')">
-                        <i class="fas fa-times"></i> <span class="btn-text">Keluar</span>
-                    </button>
-                </form>
-            </td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+            <thead>
+                <tr>
+                    <th>Ruangan</th>
+                    <th>Tanggal</th>
+                    <th>Jam</th>
+                    <th class="w-1"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for w in waiting_items %}
+                <tr>
+                    <td>{{ w.room.name }}</td>
+                    <td>{{ w.booking_date|date:'d-m-Y' }}</td>
+                    <td>{{ w.start_time|date:'H:i' }} - {{ w.end_time|date:'H:i' }}</td>
+                    <td>
+                        <a href="{% url 'cancel_waiting_list' w.id %}" class="btn btn-sm btn-danger" 
+                           onclick="return confirm('Keluar dari waiting list?')">
+                            <i class="ti ti-x"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% else %}
-<div class="text-center mt-3">
-    <i class="fas fa-list-ol fa-3x" style="color: var(--text-muted);"></i>
-    <p class="mt-2">Anda belum masuk waiting list.</p>
+<div class="empty">
+    <div class="empty-icon"><i class="ti ti-list"></i></div>
+    <p class="empty-title">Belum ada waiting list</p>
 </div>
 {% endif %}
 {% endblock %}

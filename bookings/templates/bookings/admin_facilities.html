@@ -1,51 +1,44 @@
-<!-- V4-FULL-WIDTH-FACILITIES -->
 {% extends "bookings/base.html" %}
 {% block content %}
-<div class="page-header">
-    <h2><i class="fas fa-tags"></i> Kelola Fasilitas</h2>
-    <div class="flex gap-2">
-        <a href="{% url 'admin_rooms' %}" class="btn btn-sm"><i class="fas fa-arrow-left"></i> <span class="btn-text">Kembali ke Ruangan</span></a>
+<div class="page-header mb-4">
+    <h2 class="page-title"><i class="ti ti-tags"></i> Kelola Fasilitas</h2>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="post" action="{% url 'add_facility' %}">
+            {% csrf_token %}
+            <div class="input-group">
+                <input type="text" name="name" class="form-control" placeholder="Nama fasilitas" required>
+                <button type="submit" class="btn btn-primary"><i class="ti ti-plus"></i> Tambah</button>
+            </div>
+        </form>
     </div>
 </div>
 
-<div style="margin-bottom: 20px;">
-    <form method="post" action="{% url 'add_facility' %}" style="display: flex; gap: 12px; align-items: center;">
-        {% csrf_token %}
-        <input type="text" name="name" class="form-control" placeholder="Nama fasilitas baru" required style="max-width: 400px;">
-        <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> <span class="btn-text">Tambah</span></button>
-    </form>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+            <thead>
+                <tr>
+                    <th>Fasilitas</th>
+                    <th class="w-1"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in facilities %}
+                <tr>
+                    <td>{{ f.name }}</td>
+                    <td>
+                        <a href="{% url 'delete_facility' f.id %}" class="btn btn-sm btn-outline-danger" 
+                        onclick="return confirm('Hapus fasilitas ini?')" title="Hapus">
+                            <i class="ti ti-trash"></i> Hapus
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
-
-{% if facilities %}
-<div style="width: 100%; max-width: 100%; overflow-x: auto;">
-    <table style="width: 100%; border-collapse: collapse; background: #fff; border: 2px solid #cbd5e1; border-radius: 8px; overflow: hidden; font-size: 0.9rem; box-shadow: 0 8px 20px rgba(0,0,0,0.08);">
-        <thead>
-            <tr style="background: linear-gradient(180deg, #f1f5f9, #e2e8f0);">
-                <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #1e3a8a; font-size: 0.85rem; text-transform: uppercase; border-bottom: 3px solid #f97316;"><i class="fas fa-tag"></i> Nama Fasilitas</th>
-                <th style="width: 120px; padding: 12px 16px; text-align: left; font-weight: 600; color: #1e3a8a; font-size: 0.85rem; text-transform: uppercase; border-bottom: 3px solid #f97316;"><i class="fas fa-cog"></i> Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for f in facilities %}
-            <tr style="border-bottom: 1px solid #cbd5e1;">
-                <td style="padding: 12px 16px;">{{ f.name }}</td>
-                <td style="padding: 12px 16px;">
-                    <form method="post" action="{% url 'delete_facility' f.id %}" style="display:inline;">
-                        {% csrf_token %}
-                        <button class="btn btn-danger btn-sm" onclick="return confirm('Hapus fasilitas ini?')">
-                            <i class="fas fa-trash"></i> <span class="btn-text">Hapus</span>
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% else %}
-<div class="text-center mt-3">
-    <i class="fas fa-tags fa-3x" style="color: var(--text-muted);"></i>
-    <p class="mt-2">Belum ada fasilitas yang ditambahkan.</p>
-</div>
-{% endif %}
 {% endblock %}

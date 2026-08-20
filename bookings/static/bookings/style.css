@@ -960,10 +960,10 @@ tr:hover td {
   border-bottom: none;
 }
 
-.booking-count {
+/* .booking-count {
   color: var(--accent);
   font-weight: 600;
-}
+} */
 
 /* ========== UTILITIES ========== */
 .text-center { text-align: center; }

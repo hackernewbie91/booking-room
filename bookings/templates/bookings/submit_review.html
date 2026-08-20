@@ -1,43 +1,30 @@
 {% extends "bookings/base.html" %}
 {% block content %}
-<div class="page-header">
-    <h2><i class="fas fa-star"></i> Review Ruangan: {{ room.name }}</h2>
+<div class="page-header mb-4">
+    <h2 class="page-title"><i class="ti ti-star"></i> Review Ruangan</h2>
 </div>
 
-<div class="auth-form-card" style="max-width: 500px;">
-    <h4 style="margin-bottom: 20px;">Booking: {{ booking.booking_date|date:'d-m-Y' }} • {{ booking.start_time|date:'H:i' }}-{{ booking.end_time|date:'H:i' }}</h4>
-    
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            <label><i class="fas fa-star"></i> Rating</label>
-            <div class="star-rating" style="display: flex; gap: 8px; font-size: 2rem; cursor: pointer;">
-                {% for i in "12345" %}
-                <span class="star" data-value="{{ forloop.counter }}" onclick="setRating({{ forloop.counter }})" style="color: #d1d5db;">★</span>
-                {% endfor %}
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Rating</label>
+                <div class="d-flex gap-2">
+                    {% for i in "12345" %}
+                    <button type="button" class="btn btn-outline-warning" onclick="setRating({{ forloop.counter }})">
+                        <i class="ti ti-star"></i>
+                    </button>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="rating" id="ratingInput" value="5">
             </div>
-            <input type="hidden" name="rating" id="ratingInput" value="5">
-        </div>
-        
-        <div class="form-group">
-            <label><i class="fas fa-comment"></i> Komentar (opsional)</label>
-            <textarea name="comment" class="form-control" rows="3" placeholder="Bagikan pengalaman Anda menggunakan ruangan ini..."></textarea>
-        </div>
-        
-        <button type="submit" class="btn btn-success"><i class="fas fa-paper-plane"></i> Kirim Review</button>
-        <a href="{% url 'my_bookings' %}" class="btn"><i class="fas fa-times"></i> Batal</a>
-    </form>
+            <div class="mb-3">
+                <label class="form-label">Komentar</label>
+                <textarea name="comment" class="form-control" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="ti ti-send"></i> Kirim Review</button>
+        </form>
+    </div>
 </div>
-
-<script>
-function setRating(rating) {
-    document.getElementById('ratingInput').value = rating;
-    const stars = document.querySelectorAll('.star');
-    stars.forEach((star, index) => {
-        star.style.color = index < rating ? '#f59e0b' : '#d1d5db';
-    });
-}
-// Default: 5 bintang
-setRating(5);
-</script>
 {% endblock %}
