@@ -740,7 +740,7 @@ def book_room(request):
 @login_required
 def my_bookings(request):
     auto_check_in_out()
-    bookings = Booking.objects.filter(user=request.user).order_by('-booking_date', '-created_at')
+    bookings_list = Booking.objects.filter(user=request.user).order_by('-booking_date', '-created_at')
     recurring_patterns = RecurringPattern.objects.filter(user=request.user, status='active').order_by('-created_at')
     
     # Auto check-out untuk booking user yang sedang login
@@ -759,25 +759,7 @@ def my_bookings(request):
         b.checked_out_at = now
         b.save()
 
-    # Tandai booking yang sudah expired
-    now = timezone.now()
-    for b in bookings:
-        booking_end = datetime.combine(b.booking_date, b.end_time)
-        booking_end = timezone.make_aware(booking_end) if not timezone.is_aware(booking_end) else booking_end
-        b.is_expired = booking_end < now
-
-    # ===== TAMBAHKAN KODE BARU DI SINI =====
-    # Tambahkan link kalender untuk setiap booking
-    from .calendar_utils import generate_google_calendar_link, generate_outlook_calendar_link
-
-    for b in bookings:
-        if b.status == 'confirmed':
-            b.google_calendar_link = generate_google_calendar_link(b)
-            b.outlook_calendar_link = generate_outlook_calendar_link(b)
-    # ===== SAMPAI SINI =====
-
     # Auto-reject Pending yang sudah lewat
-    now = timezone.now()
     expired_pending = Booking.objects.filter(
         user=request.user,
         status='pending'
@@ -790,6 +772,27 @@ def my_bookings(request):
         b.status = 'expired'
         b.rejection_reason = 'Expired: Waktu booking sudah terlewat.'
         b.save()
+
+    # Tambahkan link kalender untuk setiap booking (sebelum pagination)
+    from .calendar_utils import generate_google_calendar_link, generate_outlook_calendar_link
+
+    for b in bookings_list:
+        if b.status == 'confirmed':
+            b.google_calendar_link = generate_google_calendar_link(b)
+            b.outlook_calendar_link = generate_outlook_calendar_link(b)
+
+    # ===== PAGINATION =====
+    from django.core.paginator import Paginator
+    paginator = Paginator(bookings_list, 10)  # 10 booking per halaman
+    page_number = request.GET.get('page')
+    bookings = paginator.get_page(page_number)
+
+    # Tandai booking yang sudah expired (pada halaman aktif)
+    now = timezone.now()
+    for b in bookings:
+        booking_end = datetime.combine(b.booking_date, b.end_time)
+        booking_end = timezone.make_aware(booking_end) if not timezone.is_aware(booking_end) else booking_end
+        b.is_expired = booking_end < now
 
     return render(request, 'bookings/my_bookings.html', {
         'bookings': bookings,
@@ -1115,7 +1118,12 @@ def admin_bookings(request):
     elif order == 'desc' and not sort.startswith('-'):
         sort = f'-{sort}'
     
-    bookings = Booking.objects.all().order_by(sort)
+    from django.core.paginator import Paginator
+
+    bookings_list = Booking.objects.all().order_by(sort)
+    paginator = Paginator(bookings_list, 10)  # 10 booking per halaman
+    page_number = request.GET.get('page')
+    bookings = paginator.get_page(page_number)
     
     # Batas waktu untuk label "New" (5 menit terakhir)
     #new_threshold = timezone.now() - timedelta(minutes=5)

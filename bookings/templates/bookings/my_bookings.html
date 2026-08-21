@@ -77,6 +77,29 @@
         </table>
     </div>
 </div>
+{% if bookings.has_other_pages %}
+<div class="d-flex justify-content-center mt-3">
+    <ul class="pagination">
+        {% if bookings.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page=1">&laquo;</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ bookings.previous_page_number }}">‹</a></li>
+        {% endif %}
+
+        {% for num in bookings.paginator.page_range %}
+            {% if bookings.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > bookings.number|add:'-3' and num < bookings.number|add:'3' %}
+            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if bookings.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ bookings.next_page_number }}">›</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ bookings.paginator.num_pages }}">&raquo;</a></li>
+        {% endif %}
+    </ul>
+</div>
+{% endif %}
 {% else %}
 <div class="empty">
     <div class="empty-icon"><i class="ti ti-calendar-off"></i></div>
