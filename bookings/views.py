@@ -335,6 +335,8 @@ def index(request):
 
 
 def register_view(request):
+    if request.user.is_authenticated:
+        return redirect('index')
     from .forms import RegisterForm
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -349,6 +351,8 @@ def register_view(request):
 
 
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('index')   # <-- tambahkan baris ini
     if request.method == 'POST':
         from .forms import LoginForm
         form = LoginForm(request.POST)
