@@ -136,7 +136,7 @@
 
     </style>
 </head>
-<body>
+<body data-is-admin="{% if user.is_superuser %}true{% else %}false{% endif %}">
     <div class="page">
         <header class="navbar navbar-expand-md navbar-light d-print-none">
             <div class="container-xl">
@@ -367,8 +367,9 @@
                 headers: { 'X-CSRFToken': getCookie('csrftoken') }
             })
             .then(() => {
-                // Tandai dibaca dan arahkan admin ke Semua Booking
-                window.location.href = '/manage/bookings/';
+                // Tentukan halaman tujuan berdasarkan role
+                const isAdmin = document.body.getAttribute('data-is-admin') === 'true';
+                window.location.href = isAdmin ? '/manage/bookings/' : '/my-bookings/';
             });
         }
         document.addEventListener('DOMContentLoaded', function() {

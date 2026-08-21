@@ -64,6 +64,39 @@ def get_approval_mode():
     return obj.value == 'on' if obj else False
 
 
+def auto_check_in_out():
+    """Auto check-in/check-out booking berdasarkan waktu."""
+    now = timezone.localtime()
+    current_date = now.date()
+    current_time = now.time()
+
+    # Auto check-in dengan jeda 10 menit setelah waktu mulai
+    checkin_threshold = (now - timedelta(minutes=10)).time()
+    auto_checkin = Booking.objects.filter(
+        status='confirmed',
+        booking_date=current_date,
+        start_time__lte=checkin_threshold,
+        checked_in_at__isnull=True
+    )
+    for b in auto_checkin:
+        b.checked_in_at = now
+        b.save()
+        create_notification(b.user, f'[{now.strftime("%d/%m %H:%M")}] Auto check-in: {b.room.name}', b)
+
+    # Auto check-out langsung saat waktu selesai
+    auto_checkout = Booking.objects.filter(
+        status='confirmed',
+        booking_date=current_date,
+        end_time__lte=current_time,
+        checked_in_at__isnull=False,
+        checked_out_at__isnull=True
+    )
+    for b in auto_checkout:
+        b.checked_out_at = now
+        b.save()
+        create_notification(b.user, f'[{now.strftime("%d/%m %H:%M")}] Auto check-out: {b.room.name}', b)
+
+
 def send_booking_notification(booking, participants):
     subject = f"Undangan Meeting: {booking.purpose or 'Tanpa Judul'} - {booking.room.name}"
     
@@ -256,6 +289,7 @@ def generate_recurring_dates(start_date, end_date, frequency, interval, days_of_
 
 
 def index(request):
+    auto_check_in_out() 
     query = request.GET.get('q', '').strip()
     rooms = Room.objects.all()
     now = timezone.localtime()
@@ -705,6 +739,7 @@ def book_room(request):
 
 @login_required
 def my_bookings(request):
+    auto_check_in_out()
     bookings = Booking.objects.filter(user=request.user).order_by('-booking_date', '-created_at')
     recurring_patterns = RecurringPattern.objects.filter(user=request.user, status='active').order_by('-created_at')
     
@@ -1067,6 +1102,7 @@ def delete_room(request, room_id):
 @login_required
 @user_passes_test(is_admin)
 def admin_bookings(request):
+    auto_check_in_out()
     sort = request.GET.get('sort', '-booking_date')
     order = request.GET.get('order', 'desc')
     
@@ -1489,6 +1525,7 @@ def company_identity(request):
 @login_required
 @user_passes_test(is_admin)
 def dashboard(request):
+    auto_check_in_out()
     today = date.today()
     now = timezone.now()
     
