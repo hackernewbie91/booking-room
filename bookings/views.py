@@ -170,6 +170,11 @@ def create_single_booking(user, room, booking_date, start_time, end_time, purpos
     if conflict:
         return None, f"Bentrok dengan booking lain ({conflict.start_time.strftime('%H:%M')}-{conflict.end_time.strftime('%H:%M')})"
     
+    # Validasi jam mulai tidak boleh lewat jika booking untuk hari ini
+    now = timezone.localtime()
+    if booking_date == now.date() and start_time <= now.time():
+        return None, 'Tidak bisa booking untuk jam yang sudah lewat.'
+
     booking = Booking.objects.create(
         user=user,
         room=room,
@@ -462,7 +467,7 @@ def room_detail(request, room_id):
             dt = datetime.strptime(selected_date, '%Y-%m-%d').date()
             bookings_today = room.bookings.filter(
                 booking_date=dt,
-                status__in=['confirmed', 'pending']
+                status='confirmed'
             ).order_by('start_time')
             
             for b in bookings_today:
@@ -532,6 +537,11 @@ def book_room(request):
             if d < date.today():
                 messages.error(request, 'Tidak bisa booking untuk tanggal yang sudah lewat.')
                 return redirect(f"/room/{room_id}/?date={booking_date}")
+
+            # Tambahan
+            if d == date.today() and start_t <= timezone.localtime().time():
+                messages.error(request, 'Tidak bisa booking untuk jam yang sudah lewat.')
+                return redirect(f'/room/{room_id}/?date={booking_date}')
 
             if start_t >= end_t:
                 messages.error(request, 'Jam selesai harus lebih besar dari jam mulai.')
