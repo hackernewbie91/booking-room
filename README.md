@@ -171,9 +171,17 @@ Cek notifikasi, check-in/out, approval mode, dll.
 
 **14. Troubleshooting**
 Masalah	Solusi
-Service tidak jalan	sudo journalctl -u roombooking -f
-Static files tidak muncul	python3 manage.py collectstatic --noinput lalu restart service
-Database connection error	Cek DATABASE_URL di .env, tes psql
-WebSocket tidak berfungsi	Cek Redis redis-cli ping, cek Daphne service
+
+Service tidak jalan
+```ini
+sudo journalctl -u roombooking -f
+```
+Static files tidak muncul	
+```ini
+python3 manage.py collectstatic --noinput lalu restart service
+```
+Database connection error, Cek DATABASE_URL di .env, tes psql
+
+WebSocket tidak berfungsi, Cek Redis redis-cli ping, cek Daphne service
 **
 🎉 Selesai! RoomBooking Enterprise siap digunakan di server baru.**
