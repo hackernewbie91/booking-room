@@ -25,16 +25,12 @@
                         <span class="fw-medium">{{ b.user.username }}</span>
                     </td>
                     <td>{{ b.room.name }}</td>
-                    <td>{{ b.booking_date|date:'d-m-Y' }}</td>
-                    <td>{{ b.start_time|date:'H:i' }} - {{ b.end_time|date:'H:i' }}</td>
+                    <td style="white-space: nowrap;">{{ b.booking_date|date:'d-m-Y' }}</td>
+                    <td style="white-space: nowrap;">{{ b.start_time|date:'H:i' }} - {{ b.end_time|date:'H:i' }}</td>
                     <td>
-                        {% if b.purpose %}
-                            <span class="text-truncate d-inline-block" style="max-width: 150px;" title="{{ b.purpose }}">
-                                {{ b.purpose }}
-                            </span>
-                        {% else %}
-                            -
-                        {% endif %}
+                        <span class="purpose-cell" data-bs-toggle="tooltip" title="{{ b.purpose }}">
+                            {{ b.purpose }}
+                        </span>
                     </td>
                     <td>
                         {% if b.status == 'confirmed' %}
@@ -58,7 +54,12 @@
                             <span class="badge bg-secondary text-white">
                                 <i class="ti ti-user-off"></i> No Show
                             </span>
+                        {% elif b.status == 'expired' %}
+                            <span class="badge bg-secondary text-white">
+                                <i class="ti ti-clock-x"></i> Kadaluarsa
+                            </span>
                         {% endif %}
+
                     </td>
                     <td>
                         <div class="d-flex gap-1 flex-wrap">
@@ -137,5 +138,12 @@ function closeRejectModal() {
 function submitReject() {
     document.getElementById('rejectForm').submit();
 }
+</script>
+
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
 </script>
 {% endblock %}

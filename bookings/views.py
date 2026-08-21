@@ -71,7 +71,7 @@ def auto_check_in_out():
     current_time = now.time()
 
     # Auto check-in dengan jeda 10 menit setelah waktu mulai
-    checkin_threshold = (now - timedelta(minutes=10)).time()
+    checkin_threshold = (now - timedelta(minutes=20)).time()
     auto_checkin = Booking.objects.filter(
         status='confirmed',
         booking_date=current_date,
@@ -787,8 +787,8 @@ def my_bookings(request):
     )
 
     for b in expired_pending:
-        b.status = 'rejected'
-        b.rejection_reason = 'Otomatis ditolak: Waktu booking sudah terlewat.'
+        b.status = 'expired'
+        b.rejection_reason = 'Expired: Waktu booking sudah terlewat.'
         b.save()
 
     return render(request, 'bookings/my_bookings.html', {
@@ -1103,7 +1103,7 @@ def delete_room(request, room_id):
 @user_passes_test(is_admin)
 def admin_bookings(request):
     auto_check_in_out()
-    sort = request.GET.get('sort', '-booking_date')
+    sort = request.GET.get('sort', '-created_at')
     order = request.GET.get('order', 'desc')
     
     allowed_sorts = ['booking_date', 'room__name', 'user__username', 'status', 'start_time']

@@ -134,6 +134,15 @@
             border-radius: 0 0 12px 12px;
         }
 
+        .table td, .table th {
+            white-space: nowrap;
+        }
+
+        span.purpose-cell {
+            white-space: normal !important;
+            word-break: break-word;
+            display: inline-block;
+        }
     </style>
 </head>
 <body data-is-admin="{% if user.is_superuser %}true{% else %}false{% endif %}">

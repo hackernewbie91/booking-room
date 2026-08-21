@@ -45,6 +45,10 @@
                             <span class="badge bg-secondary text-white">
                                 <i class="ti ti-user-off"></i> No Show
                             </span>
+                        {% elif b.status == 'expired' %}
+                            <span class="badge bg-secondary text-white">
+                                <i class="ti ti-clock-x"></i> Kadaluarsa
+                            </span>
                         {% endif %}
                     </td>
                     <td>

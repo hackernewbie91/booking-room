@@ -63,6 +63,7 @@ class Booking(models.Model):
         ('pending', 'Pending'),
         ('rejected', 'Rejected'),
         ('no_show', 'No Show'),
+        ('expired', 'Expired'),
         
     ]
 
