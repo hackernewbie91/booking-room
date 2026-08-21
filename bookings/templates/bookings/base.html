@@ -365,7 +365,11 @@
             fetch('/api/notifications/read/' + id + '/', {
                 method: 'POST',
                 headers: { 'X-CSRFToken': getCookie('csrftoken') }
-            }).then(() => fetchNotifications());
+            })
+            .then(() => {
+                // Tandai dibaca dan arahkan admin ke Semua Booking
+                window.location.href = '/manage/bookings/';
+            });
         }
         document.addEventListener('DOMContentLoaded', function() {
             fetchNotifications();

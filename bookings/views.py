@@ -256,6 +256,7 @@ def generate_recurring_dates(start_date, end_date, frequency, interval, days_of_
 
 
 def index(request):
+    query = request.GET.get('q', '').strip()
     rooms = Room.objects.all()
     now = timezone.localtime()
     current_time = now.time()
@@ -316,10 +317,20 @@ def index(request):
             'status': status,
             'text': status_text
         }
+
+    # Di dalam index, setelah room_status dihitung
+    recent_pending_bookings = []
+    if request.user.is_authenticated and request.user.is_superuser:
+        recent_pending_bookings = Booking.objects.filter(
+            status='pending',
+            booking_date__gte=date.today()
+        ).order_by('-created_at')[:5]
     
     return render(request, 'bookings/index.html', {
         'rooms': rooms,
         'room_status': room_status,
+        'query': query,
+        'recent_pending_bookings': recent_pending_bookings,   # <-- tambahkan ini juga
     })
 
 

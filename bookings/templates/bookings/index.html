@@ -5,6 +5,35 @@
     <h2 class="page-title"><i class="ti ti-building-skyscraper"></i> Daftar Ruangan</h2>
 </div>
 
+<!-- New function -->
+{% if user.is_superuser and recent_pending_bookings %}
+<div class="card mb-4">
+    <div class="card-status-start bg-warning"></div>
+    <div class="card-body">
+        <h3 class="card-title">
+            <i class="ti ti-bell-ring"></i> Booking Baru Menunggu Persetujuan
+        </h3>
+        <div class="list-group list-group-flush">
+            {% for b in recent_pending_bookings %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ b.room.name }}</strong><br>
+                    <small class="text-muted">
+                        {{ b.user.username }} • {{ b.booking_date|date:'d-m-Y' }} • 
+                        {{ b.start_time|date:'H:i' }}-{{ b.end_time|date:'H:i' }}
+                    </small>
+                </div>
+                <a href="{% url 'admin_bookings' %}" class="btn btn-sm btn-success">
+                    <i class="ti ti-check"></i> Proses
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+<!-- end new function -->
+
 {% if rooms %}
 <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
     {% for room in rooms %}
